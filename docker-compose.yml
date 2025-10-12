@@ -7,15 +7,3 @@ services:
       POSTGRES_DB: ecommerce_db
     ports:
       - "5433:5432"
-  ecommerce-service:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      DATABASE_HOST: ecommerce-db
-      DATABASE_PORT: 5432
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_NAME: ecommerce_db
-    depends_on:
-      - ecommerce-db

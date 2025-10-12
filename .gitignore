@@ -26,3 +26,6 @@ Thumbs.db
 # Temporary files
 *.swp
 *.swo
+
+#env
+.env
