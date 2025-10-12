@@ -1,7 +1,8 @@
 # Makefile para proyecto E-commerce API (Go)
 
 APP_NAME=ecommerce-api
-DB_URL=postgres://postgres:postgres@localhost:5432/ecommerce?sslmode=disable
+DB_URL=postgres://postgres:postgres@localhost:5433/ecommerce_db?sslmode=disable
+MIGRATIONS_DIR = internal/database/migrations
 
 # Ejecutar la aplicación
 run:
@@ -17,10 +18,13 @@ test:
 
 # Ejecutar migraciones
 migrate-up:
-	migrate -path migrations -database "$(DB_URL)" up
+	migrate -path "$(MIGRATIONS_DIR)" -database "$(DB_URL)" up
 
 migrate-down:
-	migrate -path migrations -database "$(DB_URL)" down
+	migrate -path "$(MIGRATIONS_DIR)" -database "$(DB_URL)" down
+
+migrate-new:
+	migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq $(name)
 
 # Linter
 lint:

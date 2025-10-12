@@ -7,6 +7,7 @@ import (
 
 	"ecommerce-service/internal/config"
 	healthcheck "ecommerce-service/internal/health-check"
+	"ecommerce-service/internal/product"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -40,6 +41,7 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Initialize modules
 	healthcheck.Wire(b.Router, b.DB, b.Config)
+	product.Wire(b.Router, b.DB, b.Config)
 
 	return &b, nil
 }
