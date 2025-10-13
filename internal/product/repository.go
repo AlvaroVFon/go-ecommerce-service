@@ -12,25 +12,11 @@ type ProductRepository struct {
 	db *sql.DB
 }
 
-type CreateProductDTO struct {
-	Name        string
-	Description *string
-	Price       float64
-	Stock       int
-}
-
-type UpdateProductDTO struct {
-	Name        string
-	Description *string
-	Price       float64
-	Stock       *int
-}
-
 func NewProductRepository(db *sql.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (pr *ProductRepository) Create(ctx context.Context, data CreateProductDTO) error {
+func (pr *ProductRepository) Create(ctx context.Context, data CreateProductRequest) error {
 	query := "INSERT INTO products (name, price, description, stock) VALUES ($1, $2, $3, $4) RETURNING name, price, description, stock"
 	_, err := pr.db.ExecContext(ctx, query, data.Name, data.Price, data.Description, data.Stock)
 	if err != nil {
@@ -41,10 +27,10 @@ func (pr *ProductRepository) Create(ctx context.Context, data CreateProductDTO) 
 }
 
 func (pr *ProductRepository) FindByID(ctx context.Context, id int) (*Product, error) {
-	query := "SELECT id, name, price, stock FROM products WHERE id = $1"
+	query := "SELECT id, name, price, description, stock FROM products WHERE id = $1"
 	row := pr.db.QueryRowContext(ctx, query, id)
 	var product Product
-	err := row.Scan(&product.ID, &product.Name, &product.Price, &product.Stock)
+	err := row.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +38,7 @@ func (pr *ProductRepository) FindByID(ctx context.Context, id int) (*Product, er
 }
 
 func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
-	query := "SELECT id, name, price, stock FROM products"
+	query := "SELECT id, name, price, description, stock FROM products"
 	rows, err := pr.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -63,7 +49,7 @@ func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
 
 	for rows.Next() {
 		var product Product
-		if err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock); err != nil {
+		if err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock); err != nil {
 			return nil, err
 		}
 		products = append(products, product)
@@ -76,7 +62,7 @@ func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
 	return products, nil
 }
 
-func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProductDTO) error {
+func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProductRequest) error {
 	fields := []string{}
 	args := []any{}
 	i := 1
@@ -136,8 +122,8 @@ func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProduct
 }
 
 func (pr *ProductRepository) Delete(ctx context.Context, id int) error {
-	query := "DELETE FROM products where id=?"
-	_, err := pr.db.ExecContext(ctx, query)
+	query := "DELETE FROM products where id=$1"
+	_, err := pr.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

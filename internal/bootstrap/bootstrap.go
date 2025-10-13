@@ -41,7 +41,12 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Initialize modules
 	healthcheck.Wire(b.Router, b.DB, b.Config)
-	product.Wire(b.Router, b.DB, b.Config)
+
+	// Initialize product module
+	productRepository := product.NewProductRepository(b.DB)
+	productService := product.NewProductService(productRepository)
+	productHandler := product.NewProductHandler(productService)
+	product.RegisterRoutes(b.Router, productHandler)
 
 	return &b, nil
 }
