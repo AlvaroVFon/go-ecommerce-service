@@ -2,11 +2,10 @@ package product
 
 import (
 	"context"
+	"ecommerce-service/pkg/httpx"
 	"encoding/json"
 	"net/http"
 	"strconv"
-
-	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -111,7 +110,7 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = ph.productService.Update(ctx, id, product)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Error updating product")
+		httpx.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

@@ -9,7 +9,7 @@ func RegisterRoutes(r chi.Router, ph *ProductHandler) {
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", ph.FindByID)
-			r.Put("/", ph.Update)
+			r.Patch("/", ph.Update)
 			r.Delete("/", ph.Delete)
 		})
 	})

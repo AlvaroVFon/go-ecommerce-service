@@ -3,11 +3,11 @@ package bootstrap
 
 import (
 	"database/sql"
+	"ecommerce-service/internal/config"
+	"ecommerce-service/internal/product"
 	"log"
 
-	"ecommerce-service/internal/config"
 	healthcheck "ecommerce-service/internal/health-check"
-	"ecommerce-service/internal/product"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -40,12 +40,17 @@ func Bootstrap() (*Bootstrapper, error) {
 	}
 
 	// Initialize modules
-	healthcheck.Wire(b.Router, b.DB, b.Config)
+
+	// Initialize health check module
+	healthCheckHandler := healthcheck.NewHealthCheckHandler()
 
 	// Initialize product module
 	productRepository := product.NewProductRepository(b.DB)
 	productService := product.NewProductService(productRepository)
 	productHandler := product.NewProductHandler(productService)
+
+	// Register routes
+	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
 	product.RegisterRoutes(b.Router, productHandler)
 
 	return &b, nil

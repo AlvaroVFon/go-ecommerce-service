@@ -1,6 +1,9 @@
 package product
 
-import "context"
+import (
+	"context"
+	"log"
+)
 
 type Repository interface {
 	Create(ctx context.Context, data CreateProductRequest) error
@@ -21,6 +24,7 @@ func NewProductService(productRepo Repository) *ProductService {
 func (ps *ProductService) Create(ctx context.Context, product *CreateProductRequest) error {
 	err := ps.productRepo.Create(ctx, *product)
 	if err != nil {
+		log.Printf("error creating product: %v", err)
 		return err
 	}
 	return nil

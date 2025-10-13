@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -43,7 +44,12 @@ func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Printf("error closing rows: %v\n", err)
+		}
+	}()
 
 	var products []Product
 
@@ -67,7 +73,7 @@ func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProduct
 	args := []any{}
 	i := 1
 
-	if p.Name != "" {
+	if p.Name != nil {
 		fields = append(fields, fmt.Sprintf("name = $%d", i))
 		args = append(args, p.Name)
 		i++
@@ -77,7 +83,7 @@ func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProduct
 		args = append(args, p.Description)
 		i++
 	}
-	if p.Price != 0 {
+	if p.Price != nil {
 		fields = append(fields, fmt.Sprintf("price = $%d", i))
 		args = append(args, p.Price)
 		i++
@@ -105,6 +111,7 @@ func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProduct
 	)
 
 	// Ejecutar
+	args = append(args, id)
 	res, err := pr.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
@@ -114,6 +121,7 @@ func (pr *ProductRepository) Update(ctx context.Context, id int, p UpdateProduct
 	if err != nil {
 		return err
 	}
+
 	if rows == 0 {
 		return fmt.Errorf("no product updated with id %d", id)
 	}
