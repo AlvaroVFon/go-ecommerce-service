@@ -16,17 +16,15 @@ type Product struct {
 }
 
 type CreateProductRequest struct {
-	Name        string    `json:"name" validate:"required,min=3"`
-	Description string    `json:"description" validate:"required"`
-	Price       float64   `json:"price" validate:"required,gt=0"`
-	Stock       int       `json:"stock" validate:"required,gte=0"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
+	Name        string  `json:"name" validate:"required,min=3"`
+	Description string  `json:"description" validate:"required"`
+	Price       float64 `json:"price" validate:"required,gt=0"`
+	Stock       int     `json:"stock" validate:"required,gte=0"`
 }
 
 type UpdateProductRequest struct {
-	Name        *string    `json:"name"`
-	Description *string    `json:"description,omitempty"`
-	Price       *float64   `json:"price"`
-	Stock       *int       `json:"stock,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	Name        *string  `json:"name"`
+	Description *string  `json:"description,omitempty"`
+	Price       *float64 `json:"price"`
+	Stock       *int     `json:"stock,omitempty"`
 }

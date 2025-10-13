@@ -19,7 +19,7 @@ type Bootstrapper struct {
 }
 
 func Bootstrap() (*Bootstrapper, error) {
-	// Load environment variables and connect to the database
+	// Load environment variables
 	envVars := config.LoadEnvVars()
 
 	// Connect to the database

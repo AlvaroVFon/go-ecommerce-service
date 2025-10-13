@@ -30,36 +30,18 @@ func (ps *ProductService) Create(ctx context.Context, product *CreateProductRequ
 	return nil
 }
 
-func (ps *ProductService) FindById(ctx context.Context, id int) (*Product, error) {
-	product, err := ps.productRepo.FindByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return product, nil
+func (ps *ProductService) FindByID(ctx context.Context, id int) (*Product, error) {
+	return ps.productRepo.FindByID(ctx, id)
 }
 
 func (ps *ProductService) FindAll(ctx context.Context) ([]Product, error) {
-	products, err := ps.productRepo.FindAll(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return products, nil
+	return ps.productRepo.FindAll(ctx)
 }
 
 func (ps *ProductService) Update(ctx context.Context, id int, product *UpdateProductRequest) error {
-	err := ps.productRepo.Update(ctx, id, *product)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ps.productRepo.Update(ctx, id, *product)
 }
 
 func (ps *ProductService) Delete(ctx context.Context, id int) error {
-	err := ps.productRepo.Delete(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ps.productRepo.Delete(ctx, id)
 }

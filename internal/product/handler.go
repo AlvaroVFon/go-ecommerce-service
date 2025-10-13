@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	Create(ctx context.Context, data *CreateProductRequest) error
-	FindById(ctx context.Context, id int) (*Product, error)
+	FindByID(ctx context.Context, id int) (*Product, error)
 	FindAll(ctx context.Context) ([]Product, error)
 	Update(ctx context.Context, id int, data *UpdateProductRequest) error
 	Delete(ctx context.Context, id int) error
@@ -58,6 +58,7 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
 	products, err := ph.productService.FindAll(ctx)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "Error fetching products")
@@ -76,7 +77,7 @@ func (ph *ProductHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, err := ph.productService.FindById(ctx, id)
+	product, err := ph.productService.FindByID(ctx, id)
 	if err != nil {
 		httpx.Error(w, http.StatusNotFound, "Product not found")
 		return
