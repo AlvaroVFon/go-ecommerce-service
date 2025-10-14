@@ -114,3 +114,19 @@ func (r *UserRepository) Update(ctx context.Context, id int, u UpdateUserRequest
 
 	return nil
 }
+
+func (r *UserRepository) Delete(ctx context.Context, id int) error {
+	query := "DELETE FROM users WHERE id = $1"
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Printf("error deleting user with id %d: %v\n", id, err)
+		return err
+	}
+
+	if rows, err := result.RowsAffected(); err != nil || rows == 0 {
+		return err
+	}
+
+	return nil
+}

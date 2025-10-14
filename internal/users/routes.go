@@ -8,5 +8,6 @@ func RegisterRoutes(r chi.Router, uh *UserHandler) {
 		r.Get("/", uh.FindAll)
 		r.Get("/{id}", uh.FindByID)
 		r.Patch("/{id}", uh.Update)
+		r.Delete("/{id}", uh.Delete)
 	})
 }

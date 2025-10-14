@@ -1,5 +1,5 @@
-// Package utils provides utility functions
-package utils
+// Package cryptox provides utilities for secure password handling, including hashing and verification.
+package cryptox
 
 import (
 	"golang.org/x/crypto/bcrypt"

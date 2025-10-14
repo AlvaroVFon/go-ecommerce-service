@@ -16,6 +16,7 @@ type Service interface {
 	FindByID(ctx context.Context, id int) (*PublicUser, error)
 	FindAll(ctx context.Context) ([]PublicUser, error)
 	Update(ctx context.Context, id int, u UpdateUserRequest) error
+	Delete(ctx context.Context, id int) error
 }
 
 type UserHandler struct {
@@ -42,7 +43,7 @@ func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := uh.userService.Create(ctx, &req); err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Internal server error")
+		httpx.Error(w, http.StatusConflict, "User with this email already exists")
 		return
 	}
 
@@ -106,4 +107,22 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.JSON(w, http.StatusOK, map[string]string{"message": "user updated successfully"})
+}
+
+func (uh *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	if err := uh.userService.Delete(ctx, id); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, map[string]string{"message": "user deleted successfully"})
 }

@@ -2,7 +2,7 @@ package users
 
 import (
 	"context"
-	"ecommerce-service/internal/utils"
+	"ecommerce-service/pkg/cryptox"
 )
 
 type Repository interface {
@@ -10,6 +10,7 @@ type Repository interface {
 	FindByID(ctx context.Context, id int) (*PublicUser, error)
 	FindAll(ctx context.Context) ([]PublicUser, error)
 	Update(ctx context.Context, id int, u UpdateUserRequest) error
+	Delete(ctx context.Context, id int) error
 }
 
 type UserService struct {
@@ -21,7 +22,7 @@ func NewUserService(repo Repository) *UserService {
 }
 
 func (us *UserService) Create(ctx context.Context, u *CreateUserRequest) error {
-	hashPassword, err := utils.HashPassword(u.Password, 10)
+	hashPassword, err := cryptox.HashPassword(u.Password, 10)
 	if err != nil {
 		return err
 	}
@@ -40,7 +41,7 @@ func (us *UserService) FindAll(ctx context.Context) ([]PublicUser, error) {
 
 func (us *UserService) Update(ctx context.Context, id int, u UpdateUserRequest) error {
 	if u.Password != nil {
-		hashPassword, err := utils.HashPassword(*u.Password, 10)
+		hashPassword, err := cryptox.HashPassword(*u.Password, 10)
 		if err != nil {
 			return err
 		}
@@ -53,4 +54,8 @@ func (us *UserService) Update(ctx context.Context, id int, u UpdateUserRequest) 
 	}
 
 	return nil
+}
+
+func (us *UserService) Delete(ctx context.Context, id int) error {
+	return us.userRepo.Delete(ctx, id)
 }
