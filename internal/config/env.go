@@ -9,17 +9,23 @@ import (
 )
 
 type Config struct {
+	// app
 	AppName string
 	AppEnv  string
 	AppHost string
 	AppPort string
 
+	// database
 	DBHost     string
 	DBPort     int
 	DBUser     string
 	DBPassword string
 	DBName     string
 	DBSSLMode  string
+
+	// pagination
+	Limit  int
+	Offset int
 }
 
 func LoadEnvVars() *Config {
@@ -34,6 +40,16 @@ func LoadEnvVars() *Config {
 		log.Fatalf("DB_PORT debe ser un número válido: %v", err)
 	}
 
+	limit, err := strconv.Atoi(getEnv("PAGINATION_LIMIT", "10"))
+	if err != nil {
+		log.Fatalf("PAGINATION_LIMIT debe ser un número válido: %v", err)
+	}
+
+	offset, err := strconv.Atoi(getEnv("PAGINATION_OFFSET", "0"))
+	if err != nil {
+		log.Fatalf("PAGINATION_OFFSET debe ser un número válido: %v", err)
+	}
+
 	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
 		AppEnv:  getEnv("APP_ENV", "development"),
@@ -46,6 +62,9 @@ func LoadEnvVars() *Config {
 		DBPassword: getEnv("DB_PASSWORD", "postgres"),
 		DBName:     getEnv("DB_NAME", "ecommerce_db"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+
+		Limit:  limit,
+		Offset: offset,
 	}
 
 	return cfg

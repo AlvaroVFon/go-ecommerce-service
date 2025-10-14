@@ -1,4 +1,4 @@
-package product
+package products
 
 import (
 	"context"
@@ -28,19 +28,20 @@ func (pr *ProductRepository) Create(ctx context.Context, data CreateProductReque
 }
 
 func (pr *ProductRepository) FindByID(ctx context.Context, id int) (*Product, error) {
-	query := "SELECT id, name, price, description, stock FROM products WHERE id = $1"
+	query := "SELECT id, name, price, description, stock, created_at, updated_at FROM products WHERE id = $1"
 	row := pr.db.QueryRowContext(ctx, query, id)
 	var product Product
-	err := row.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock)
+	err := row.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock, &product.CreatedAt, &product.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &product, nil
 }
 
-func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
-	query := "SELECT id, name, price, description, stock FROM products"
-	rows, err := pr.db.QueryContext(ctx, query)
+func (pr *ProductRepository) FindAll(ctx context.Context, limit, offset int) ([]Product, error) {
+	query := "SELECT id, name, price, description, stock, created_at, updated_at FROM products LIMIT $1 OFFSET $2"
+
+	rows, err := pr.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,8 @@ func (pr *ProductRepository) FindAll(ctx context.Context) ([]Product, error) {
 
 	for rows.Next() {
 		var product Product
-		if err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock); err != nil {
+		if err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Description, &product.Stock, &product.CreatedAt, &product.UpdatedAt); err != nil {
+			log.Printf("error scanning product: %v\n", err)
 			return nil, err
 		}
 		products = append(products, product)
@@ -137,4 +139,18 @@ func (pr *ProductRepository) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (pr *ProductRepository) Count(ctx context.Context) (int, error) {
+	query := "SELECT COUNT(*) FROM products"
+	row, err := pr.db.QueryContext(ctx, query)
+	if err != nil {
+		return 0, err
+	}
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

@@ -4,7 +4,8 @@ package bootstrap
 import (
 	"database/sql"
 	"ecommerce-service/internal/config"
-	"ecommerce-service/internal/product"
+	"ecommerce-service/internal/products"
+	"ecommerce-service/internal/users"
 	"log"
 
 	healthcheck "ecommerce-service/internal/health-check"
@@ -44,14 +45,20 @@ func Bootstrap() (*Bootstrapper, error) {
 	// Initialize health check module
 	healthCheckHandler := healthcheck.NewHealthCheckHandler()
 
+	// Initialize user module
+	userRepository := users.NewUserRepository(b.DB)
+	userService := users.NewUserService(userRepository)
+	userHandler := users.NewUserHandler(userService)
+
 	// Initialize product module
-	productRepository := product.NewProductRepository(b.DB)
-	productService := product.NewProductService(productRepository)
-	productHandler := product.NewProductHandler(productService)
+	productRepository := products.NewProductRepository(b.DB)
+	productService := products.NewProductService(productRepository)
+	productHandler := products.NewProductHandler(productService)
 
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
-	product.RegisterRoutes(b.Router, productHandler)
+	users.RegisterRoutes(b.Router, userHandler)
+	products.RegisterRoutes(b.Router, productHandler)
 
 	return &b, nil
 }

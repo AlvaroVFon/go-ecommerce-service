@@ -1,5 +1,5 @@
-// Package product defines the data structures and types related to products in the system.
-package product
+// Package products defines the data structures and types related to products in the system.
+package products
 
 import (
 	"time"

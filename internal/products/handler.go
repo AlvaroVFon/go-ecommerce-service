@@ -1,7 +1,8 @@
-package product
+package products
 
 import (
 	"context"
+	"ecommerce-service/internal/config"
 	"ecommerce-service/pkg/httpx"
 	"encoding/json"
 	"net/http"
@@ -14,14 +15,15 @@ import (
 type Service interface {
 	Create(ctx context.Context, data *CreateProductRequest) error
 	FindByID(ctx context.Context, id int) (*Product, error)
-	FindAll(ctx context.Context) ([]Product, error)
-	Update(ctx context.Context, id int, data *UpdateProductRequest) error
+	FindAll(ctx context.Context, limit, offset int) ([]Product, error)
+	Update(ctx context.Context, id int, data UpdateProductRequest) error
 	Delete(ctx context.Context, id int) error
 }
 
 type ProductHandler struct {
 	productService Service
 	validate       *validator.Validate
+	config         config.Config
 }
 
 func NewProductHandler(productService Service) *ProductHandler {
@@ -59,7 +61,20 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	products, err := ph.productService.FindAll(ctx)
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = ph.config.Limit
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = ph.config.Offset
+	}
+
+	products, err := ph.productService.FindAll(ctx, limit, offset)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "Error fetching products")
 		return
@@ -78,12 +93,14 @@ func (ph *ProductHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product, err := ph.productService.FindByID(ctx, id)
-	if err != nil {
+	if err != nil && product == nil {
 		httpx.Error(w, http.StatusNotFound, "Product not found")
 		return
+	} else if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "Error fetching product")
 	}
 
-	httpx.JSON(w, http.StatusOK, product)
+	httpx.JSON(w, http.StatusOK, &product)
 }
 
 func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -95,9 +112,8 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := &UpdateProductRequest{}
-	err = json.NewDecoder(r.Body).Decode(product)
-	if err != nil {
+	product := UpdateProductRequest{}
+	if err = json.NewDecoder(r.Body).Decode(&product); err != nil || product == (UpdateProductRequest{}) {
 		httpx.Error(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}

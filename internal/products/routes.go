@@ -1,4 +1,4 @@
-package product
+package products
 
 import "github.com/go-chi/chi/v5"
 
