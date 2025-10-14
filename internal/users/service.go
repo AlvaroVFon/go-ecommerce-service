@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"ecommerce-service/internal/config"
 	"ecommerce-service/pkg/cryptox"
 )
 
@@ -15,10 +16,11 @@ type Repository interface {
 
 type UserService struct {
 	userRepo Repository
+	config   *config.Config
 }
 
-func NewUserService(repo Repository) *UserService {
-	return &UserService{userRepo: repo}
+func NewUserService(repo Repository, c *config.Config) *UserService {
+	return &UserService{userRepo: repo, config: c}
 }
 
 func (us *UserService) Create(ctx context.Context, u *CreateUserRequest) error {
@@ -41,7 +43,7 @@ func (us *UserService) FindAll(ctx context.Context) ([]PublicUser, error) {
 
 func (us *UserService) Update(ctx context.Context, id int, u UpdateUserRequest) error {
 	if u.Password != nil {
-		hashPassword, err := cryptox.HashPassword(*u.Password, 10)
+		hashPassword, err := cryptox.HashPassword(*u.Password, us.config.BcryptCost)
 		if err != nil {
 			return err
 		}

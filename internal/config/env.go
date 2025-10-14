@@ -26,6 +26,9 @@ type Config struct {
 	// pagination
 	Limit  int
 	Offset int
+
+	// Cryptox
+	BcryptCost int
 }
 
 func LoadEnvVars() *Config {
@@ -40,6 +43,7 @@ func LoadEnvVars() *Config {
 		log.Fatalf("DB_PORT debe ser un número válido: %v", err)
 	}
 
+	// pagination
 	limit, err := strconv.Atoi(getEnv("PAGINATION_LIMIT", "10"))
 	if err != nil {
 		log.Fatalf("PAGINATION_LIMIT debe ser un número válido: %v", err)
@@ -48,6 +52,12 @@ func LoadEnvVars() *Config {
 	offset, err := strconv.Atoi(getEnv("PAGINATION_OFFSET", "0"))
 	if err != nil {
 		log.Fatalf("PAGINATION_OFFSET debe ser un número válido: %v", err)
+	}
+
+	// cryptox
+	bcryptCost, err := strconv.Atoi(getEnv("BCRYPT_COST", "10"))
+	if err != nil {
+		log.Fatalf("BCRYPT_COST debe ser un número válido: %v", err)
 	}
 
 	cfg := &Config{
@@ -65,6 +75,8 @@ func LoadEnvVars() *Config {
 
 		Limit:  limit,
 		Offset: offset,
+
+		BcryptCost: bcryptCost,
 	}
 
 	return cfg

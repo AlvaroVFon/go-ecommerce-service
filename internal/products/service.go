@@ -2,6 +2,7 @@ package products
 
 import (
 	"context"
+	"ecommerce-service/internal/config"
 	"log"
 )
 
@@ -15,10 +16,11 @@ type Repository interface {
 
 type ProductService struct {
 	productRepo Repository
+	config      *config.Config
 }
 
-func NewProductService(productRepo Repository) *ProductService {
-	return &ProductService{productRepo: productRepo}
+func NewProductService(productRepo Repository, c *config.Config) *ProductService {
+	return &ProductService{productRepo: productRepo, config: c}
 }
 
 func (ps *ProductService) Create(ctx context.Context, p *CreateProductRequest) error {
@@ -35,6 +37,13 @@ func (ps *ProductService) FindByID(ctx context.Context, id int) (*Product, error
 }
 
 func (ps *ProductService) FindAll(ctx context.Context, limit, offset int) ([]Product, error) {
+	if limit <= 0 {
+		limit = ps.config.Limit
+	}
+
+	if offset < 0 {
+		offset = 0
+	}
 	return ps.productRepo.FindAll(ctx, limit, offset)
 }
 

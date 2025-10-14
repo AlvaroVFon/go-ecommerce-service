@@ -47,12 +47,12 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Initialize user module
 	userRepository := users.NewUserRepository(b.DB)
-	userService := users.NewUserService(userRepository)
+	userService := users.NewUserService(userRepository, b.Config)
 	userHandler := users.NewUserHandler(userService)
 
 	// Initialize product module
 	productRepository := products.NewProductRepository(b.DB)
-	productService := products.NewProductService(productRepository)
+	productService := products.NewProductService(productRepository, b.Config)
 	productHandler := products.NewProductHandler(productService)
 
 	// Register routes
