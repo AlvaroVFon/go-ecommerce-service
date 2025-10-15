@@ -26,18 +26,18 @@ func (r *UserRepository) Create(ctx context.Context, u *CreateUserRequest) error
 	return nil
 }
 
-func (r *UserRepository) FindByID(ctx context.Context, id int) (*PublicUser, error) {
-	query := "SELECT id, email,  created_at, updated_at FROM users WHERE id = $1"
+func (r *UserRepository) FindByID(ctx context.Context, id int) (*User, error) {
+	query := "SELECT id, email, password, created_at, updated_at FROM users WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
-	var u PublicUser
-	err := row.Scan(&u.ID, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	var u User
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &u, nil
 }
 
-func (r *UserRepository) FindAll(ctx context.Context) ([]PublicUser, error) {
+func (r *UserRepository) FindAll(ctx context.Context) ([]User, error) {
 	query := "SELECT id, email, created_at, updated_at FROM users"
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
@@ -50,11 +50,11 @@ func (r *UserRepository) FindAll(ctx context.Context) ([]PublicUser, error) {
 		}
 	}()
 
-	var users []PublicUser
+	var users []User
 
 	for rows.Next() {
-		var u PublicUser
-		if err := rows.Scan(&u.ID, &u.Email, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			log.Printf("error scanning user: %v\n", err)
 			return nil, err
 		}
