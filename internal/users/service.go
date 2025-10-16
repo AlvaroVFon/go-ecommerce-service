@@ -3,13 +3,14 @@ package users
 import (
 	"context"
 	"ecommerce-service/internal/config"
+
 	"ecommerce-service/pkg/cryptox"
 )
 
 type Repository interface {
 	Create(ctx context.Context, u *CreateUserRequest) error
-	FindByID(ctx context.Context, id int) (*PublicUser, error)
-	FindAll(ctx context.Context) ([]PublicUser, error)
+	FindByID(ctx context.Context, id int) (*User, error)
+	FindAll(ctx context.Context) ([]User, error)
 	Update(ctx context.Context, id int, u UpdateUserRequest) error
 	Delete(ctx context.Context, id int) error
 }
@@ -33,11 +34,11 @@ func (us *UserService) Create(ctx context.Context, u *CreateUserRequest) error {
 	return us.userRepo.Create(ctx, u)
 }
 
-func (us *UserService) FindByID(ctx context.Context, id int) (*PublicUser, error) {
+func (us *UserService) FindByID(ctx context.Context, id int) (*User, error) {
 	return us.userRepo.FindByID(ctx, id)
 }
 
-func (us *UserService) FindAll(ctx context.Context) ([]PublicUser, error) {
+func (us *UserService) FindAll(ctx context.Context) ([]User, error) {
 	return us.userRepo.FindAll(ctx)
 }
 

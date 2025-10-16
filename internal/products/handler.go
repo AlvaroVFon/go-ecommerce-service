@@ -2,11 +2,12 @@ package products
 
 import (
 	"context"
-	"ecommerce-service/internal/config"
-	"ecommerce-service/pkg/httpx"
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"ecommerce-service/internal/config"
+	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -80,6 +81,10 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "Error fetching products")
 		return
+	}
+
+	if products == nil {
+		products = []Product{}
 	}
 
 	httpx.JSON(w, http.StatusOK, products)
