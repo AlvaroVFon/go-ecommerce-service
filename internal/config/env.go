@@ -29,6 +29,12 @@ type Config struct {
 
 	// Cryptox
 	BcryptCost int
+
+	// JWT
+	JWTSecret        string
+	JWTExp           int // in seconds
+	JWTRefreshSecret string
+	JWTRefreshExp    int // in seconds
 }
 
 func LoadEnvVars() *Config {
@@ -60,6 +66,16 @@ func LoadEnvVars() *Config {
 		log.Fatalf("BCRYPT_COST debe ser un número válido: %v", err)
 	}
 
+	JWTExp, err := strconv.Atoi(getEnv("JWT_EXP", "3600"))
+	if err != nil {
+		log.Fatalf("JWT_EXP debe ser un número válido: %v", err)
+	}
+
+	JWTRefreshExp, err := strconv.Atoi(getEnv("JWT_REFRESH_EXP", "86400"))
+	if err != nil {
+		log.Fatalf("JWT_REFRESH_EXP debe ser un número válido: %v", err)
+	}
+
 	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
 		AppEnv:  getEnv("APP_ENV", "development"),
@@ -77,6 +93,11 @@ func LoadEnvVars() *Config {
 		Offset: offset,
 
 		BcryptCost: bcryptCost,
+
+		JWTSecret:        getEnv("JWT_SECRET", "your-secret-key"),
+		JWTExp:           JWTExp,
+		JWTRefreshSecret: getEnv("JWT_REFRESH_SECRET", "your-refresh-secret-key"),
+		JWTRefreshExp:    JWTRefreshExp,
 	}
 
 	return cfg

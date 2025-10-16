@@ -37,6 +37,18 @@ func (r *UserRepository) FindByID(ctx context.Context, id int) (*User, error) {
 	return &u, nil
 }
 
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, error) {
+	query := "SELECT id, email, password, created_at, updated_at FROM users WHERE email = $1"
+	row := r.db.QueryRowContext(ctx, query, email)
+	var u User
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
 func (r *UserRepository) FindAll(ctx context.Context) ([]User, error) {
 	query := "SELECT id, email, created_at, updated_at FROM users"
 	rows, err := r.db.QueryContext(ctx, query)
