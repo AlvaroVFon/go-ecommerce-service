@@ -4,6 +4,7 @@ package bootstrap
 import (
 	"database/sql"
 	"ecommerce-service/internal/auth"
+	"ecommerce-service/internal/auth/strategies"
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/products"
 	"ecommerce-service/internal/tokens"
@@ -52,11 +53,19 @@ func Bootstrap() (*Bootstrapper, error) {
 	userService := users.NewUserService(userRepository, b.Config)
 	userHandler := users.NewUserHandler(userService)
 
-	// Initialize token service
+	// Initialize token module
 	tokenService := tokens.NewTokenService(b.Config)
 
+	// Initialize strategies
+	passwordStrategy := strategies.NewPasswordStrategy(userService)
+
+	// Register strategies in a map
+	authStrategies := map[string]auth.AuthStrategy{
+		"password": passwordStrategy,
+	}
+
 	// Initialize auth module
-	authService := auth.NewAuthService(userService)
+	authService := auth.NewAuthService(authStrategies)
 	authHandler := auth.NewAuthHandler(authService, tokenService)
 
 	// Initialize product module

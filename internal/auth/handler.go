@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"ecommerce-service/internal/auth/strategies"
 	"ecommerce-service/internal/users"
 	"ecommerce-service/pkg/httpx"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 
 type (
 	Service interface {
-		Authenticate(ctx context.Context, email, password string) (*users.User, error)
+		Authenticate(ctx context.Context, strategyName string, credentials any) (*users.User, error)
 	}
 
 	TokensService interface {
@@ -22,26 +23,22 @@ type (
 	}
 )
 
-func NewAuthHandler(a Service, t TokenService) *AuthHandler {
+func NewAuthHandler(a Service, t TokensService) *AuthHandler {
 	return &AuthHandler{authService: a, tokensService: t}
 }
 
 func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req struct {
-		Email    string
-		Password string
-	}
-
+	var req strategies.PasswordCredentials
 	err := httpx.ParseJSON(r, &req)
 	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "invalid request payload")
 		return
 	}
 
-	u, err := ah.authService.Authenticate(ctx, req.Email, req.Password)
-	if err != nil && u == nil {
+	u, err := ah.authService.Authenticate(ctx, "password", req)
+	if err != nil {
 		httpx.Error(w, http.StatusUnauthorized, "authentication failed")
 		return
 	}

@@ -4,34 +4,28 @@ package auth
 import (
 	"context"
 	"ecommerce-service/internal/users"
-	"ecommerce-service/pkg/cryptox"
+	"errors"
 )
 
-type UserService interface {
-	FindByEmail(ctx context.Context, email string) (*users.User, error)
-}
+var ErrStrategyNotFound = errors.New("authentication strategy not found")
 
-type TokenService interface {
-	GenerateTokens(userID int) (accessToken, refreshToken string, err error)
+type AuthStrategy interface {
+	Authenticate(ctx context.Context, credentials any) (*users.User, error)
 }
 
 type AuthService struct {
-	userService UserService
+	strategies map[string]AuthStrategy
 }
 
-func NewAuthService(u UserService) *AuthService {
-	return &AuthService{userService: u}
+func NewAuthService(strategies map[string]AuthStrategy) *AuthService {
+	return &AuthService{strategies: strategies}
 }
 
-func (as *AuthService) Authenticate(ctx context.Context, email, password string) (*users.User, error) {
-	u, err := as.userService.FindByEmail(ctx, email)
-	if err != nil {
-		return nil, err
+func (as *AuthService) Authenticate(ctx context.Context, strategyName string, credentials any) (*users.User, error) {
+	strategy, ok := as.strategies[strategyName]
+	if !ok {
+		return nil, ErrStrategyNotFound
 	}
 
-	if err := cryptox.VerifyPassword(u.Password, password); err != nil {
-		return nil, err
-	}
-
-	return u, nil
+	return strategy.Authenticate(ctx, credentials)
 }
