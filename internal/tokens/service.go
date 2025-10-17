@@ -55,3 +55,17 @@ func (ts *TokenService) GenerateTokens(userID int) (accessToken, refreshToken st
 
 	return accessToken, refreshToken, nil
 }
+
+func VerifyToken(tokenStr string, secret string) (*jwt.Token, error) {
+	return jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
+		return []byte(secret), nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+}
+
+func ExtractClaims(token *jwt.Token) (jwt.MapClaims, error) {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, jwt.ErrTokenInvalidClaims
+}
