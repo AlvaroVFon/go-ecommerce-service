@@ -15,6 +15,7 @@ func main() {
 	seeders := []func(db *sql.DB) error{
 		seeds.SeedRoles,
 		seeds.SeedUsers,
+		seeds.SeedCategories,
 	}
 
 	for _, seeder := range seeders {

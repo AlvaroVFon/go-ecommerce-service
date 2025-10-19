@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"ecommerce-service/internal/auth"
 	"ecommerce-service/internal/auth/strategies"
+	"ecommerce-service/internal/categories"
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/products"
 	"ecommerce-service/internal/tokens"
@@ -45,26 +46,26 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Initialize modules
 
-	// Initialize health check module
+	// health-check module
 	healthCheckHandler := healthcheck.NewHealthCheckHandler()
 
-	// Initialize user module
+	// user module
 	userRepository := users.NewUserRepository(b.DB)
 	userService := users.NewUserService(userRepository, b.Config)
 	userHandler := users.NewUserHandler(userService)
 
-	// Initialize token module
+	// token module
 	tokenService := tokens.NewTokenService(b.Config)
 
-	// Initialize strategies
+	// strategies
 	passwordStrategy := strategies.NewPasswordStrategy(userService)
 
-	// Register strategies in a map
+	// strategies registry
 	authStrategies := map[string]auth.AuthStrategy{
 		"password": passwordStrategy,
 	}
 
-	// Initialize auth module
+	// auth module
 	authService := auth.NewAuthService(authStrategies)
 	authHandler := auth.NewAuthHandler(authService, tokenService)
 
@@ -73,11 +74,17 @@ func Bootstrap() (*Bootstrapper, error) {
 	productService := products.NewProductService(productRepository, b.Config)
 	productHandler := products.NewProductHandler(productService)
 
+	// category module
+	categoryRepository := categories.NewCategoryRepository(b.DB)
+	categoryService := categories.NewCategoryService(categoryRepository)
+	categoryHandler := categories.NewCategoryHandler(categoryService)
+
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
 	users.RegisterRoutes(b.Router, userHandler)
 	products.RegisterRoutes(b.Router, productHandler)
 	auth.RegisterRoutes(b.Router, authHandler)
+	categories.RegisterRoutes(b.Router, categoryHandler)
 
 	return &b, nil
 }
