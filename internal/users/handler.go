@@ -2,12 +2,11 @@ package users
 
 import (
 	"context"
+	"ecommerce-service/pkg/httpx"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
-
-	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"

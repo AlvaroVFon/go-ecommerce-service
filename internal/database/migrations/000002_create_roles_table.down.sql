@@ -1,0 +1,1 @@
+DROP TABNLE IF EXISTS roles;

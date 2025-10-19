@@ -1,6 +1,7 @@
 # AI Agent Context for Go E-commerce API
 
-This document provides context for AI agents interacting with the Go E-commerce API project.
+This document provides context for AI agents interacting with the Go E-commerce
+API project.
 
 ## Project Overview
 
@@ -17,12 +18,14 @@ This is a microservice-based e-commerce API written in Go. The primary goal of t
 ## Project Structure
 
 - `cmd/api/main.go`: The main entry point for the application.
-- `internal/`: Contains the core application logic, separated by domain (e.g., `product`, `order`).
+- `internal/`: Contains the core application logic, separated by domain
+  (e.g., `product`, `order`).
 - `pkg/`: Contains shared libraries and utilities.
 - `api/`: Contains OpenAPI/Swagger specifications.
 
 ## Development Workflow
 
 - Use the `Makefile` for common tasks like running, building, and testing the application.
-- The application is configured through environment variables. A `.env.example` file is provided as a template.
+- The application is configured through environment variables. A `.env.example`
+  file is provided as a template.
 - The local development environment can be started with `make docker-up`.

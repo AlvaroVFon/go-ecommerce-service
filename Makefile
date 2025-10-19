@@ -8,6 +8,10 @@ MIGRATIONS_DIR = internal/database/migrations
 run:
 	go run ./cmd/api
 
+# Ejecutar seeding de datos
+seed:
+	go run ./cmd/seed
+	
 # Compilar binario
 build:
 	go build -o bin/$(APP_NAME) ./cmd/api

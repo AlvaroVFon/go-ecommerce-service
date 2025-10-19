@@ -3,14 +3,29 @@ package auth
 
 import (
 	"context"
-
 	"ecommerce-service/internal/users"
+	"errors"
 )
 
-type UserService interface {
-	FindByID(ctx context.Context, id int) (*users.User, error)
+var ErrStrategyNotFound = errors.New("authentication strategy not found")
+
+type AuthStrategy interface {
+	Authenticate(ctx context.Context, credentials any) (*users.User, error)
 }
 
 type AuthService struct {
-	userService UserService
+	strategies map[string]AuthStrategy
+}
+
+func NewAuthService(strategies map[string]AuthStrategy) *AuthService {
+	return &AuthService{strategies: strategies}
+}
+
+func (as *AuthService) Authenticate(ctx context.Context, strategyName string, credentials any) (*users.User, error) {
+	strategy, ok := as.strategies[strategyName]
+	if !ok {
+		return nil, ErrStrategyNotFound
+	}
+
+	return strategy.Authenticate(ctx, credentials)
 }

@@ -26,6 +26,15 @@ type Config struct {
 	// pagination
 	Limit  int
 	Offset int
+
+	// Cryptox
+	BcryptCost int
+
+	// JWT
+	JWTSecret        string
+	JWTExp           int // in seconds
+	JWTRefreshSecret string
+	JWTRefreshExp    int // in seconds
 }
 
 func LoadEnvVars() *Config {
@@ -40,6 +49,7 @@ func LoadEnvVars() *Config {
 		log.Fatalf("DB_PORT debe ser un número válido: %v", err)
 	}
 
+	// pagination
 	limit, err := strconv.Atoi(getEnv("PAGINATION_LIMIT", "10"))
 	if err != nil {
 		log.Fatalf("PAGINATION_LIMIT debe ser un número válido: %v", err)
@@ -48,6 +58,22 @@ func LoadEnvVars() *Config {
 	offset, err := strconv.Atoi(getEnv("PAGINATION_OFFSET", "0"))
 	if err != nil {
 		log.Fatalf("PAGINATION_OFFSET debe ser un número válido: %v", err)
+	}
+
+	// cryptox
+	bcryptCost, err := strconv.Atoi(getEnv("BCRYPT_COST", "10"))
+	if err != nil {
+		log.Fatalf("BCRYPT_COST debe ser un número válido: %v", err)
+	}
+
+	JWTExp, err := strconv.Atoi(getEnv("JWT_EXP", "3600"))
+	if err != nil {
+		log.Fatalf("JWT_EXP debe ser un número válido: %v", err)
+	}
+
+	JWTRefreshExp, err := strconv.Atoi(getEnv("JWT_REFRESH_EXP", "86400"))
+	if err != nil {
+		log.Fatalf("JWT_REFRESH_EXP debe ser un número válido: %v", err)
 	}
 
 	cfg := &Config{
@@ -65,6 +91,13 @@ func LoadEnvVars() *Config {
 
 		Limit:  limit,
 		Offset: offset,
+
+		BcryptCost: bcryptCost,
+
+		JWTSecret:        getEnv("JWT_SECRET", "your-secret-key"),
+		JWTExp:           JWTExp,
+		JWTRefreshSecret: getEnv("JWT_REFRESH_SECRET", "your-refresh-secret-key"),
+		JWTRefreshExp:    JWTRefreshExp,
 	}
 
 	return cfg

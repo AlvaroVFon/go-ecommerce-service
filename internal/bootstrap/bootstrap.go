@@ -3,8 +3,11 @@ package bootstrap
 
 import (
 	"database/sql"
+	"ecommerce-service/internal/auth"
+	"ecommerce-service/internal/auth/strategies"
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/products"
+	"ecommerce-service/internal/tokens"
 	"ecommerce-service/internal/users"
 	"log"
 
@@ -47,18 +50,34 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Initialize user module
 	userRepository := users.NewUserRepository(b.DB)
-	userService := users.NewUserService(userRepository)
+	userService := users.NewUserService(userRepository, b.Config)
 	userHandler := users.NewUserHandler(userService)
+
+	// Initialize token module
+	tokenService := tokens.NewTokenService(b.Config)
+
+	// Initialize strategies
+	passwordStrategy := strategies.NewPasswordStrategy(userService)
+
+	// Register strategies in a map
+	authStrategies := map[string]auth.AuthStrategy{
+		"password": passwordStrategy,
+	}
+
+	// Initialize auth module
+	authService := auth.NewAuthService(authStrategies)
+	authHandler := auth.NewAuthHandler(authService, tokenService)
 
 	// Initialize product module
 	productRepository := products.NewProductRepository(b.DB)
-	productService := products.NewProductService(productRepository)
+	productService := products.NewProductService(productRepository, b.Config)
 	productHandler := products.NewProductHandler(productService)
 
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
 	users.RegisterRoutes(b.Router, userHandler)
 	products.RegisterRoutes(b.Router, productHandler)
+	auth.RegisterRoutes(b.Router, authHandler)
 
 	return &b, nil
 }

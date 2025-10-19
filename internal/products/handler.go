@@ -24,13 +24,14 @@ type Service interface {
 type ProductHandler struct {
 	productService Service
 	validate       *validator.Validate
-	config         config.Config
+	config         *config.Config
 }
 
 func NewProductHandler(productService Service) *ProductHandler {
 	return &ProductHandler{
 		productService: productService,
 		validate:       validator.New(),
+		config:         config.LoadEnvVars(),
 	}
 }
 
@@ -66,13 +67,14 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	offsetStr := r.URL.Query().Get("offset")
 
 	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = ph.config.Limit
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "Invalid limit parameter")
+		return
 	}
-
 	offset, err := strconv.Atoi(offsetStr)
-	if err != nil || offset < 0 {
-		offset = ph.config.Offset
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "Invalid offset parameter")
+		return
 	}
 
 	products, err := ph.productService.FindAll(ctx, limit, offset)
