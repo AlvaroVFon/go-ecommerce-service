@@ -1,7 +1,5 @@
 # Go E-commerce API
 
-## Go E-commerce API
-
 [![Go Version](https://img.shields.io/badge/go-1.24.2-blue.svg)](https://golang.org)
 [![Docker](https://img.shields.io/badge/docker-%20%20-blue.svg?logo=docker)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/docker--compose-%20%20-blue.svg?logo=docker)](https://docs.docker.com/compose/)
