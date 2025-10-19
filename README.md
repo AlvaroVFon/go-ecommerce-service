@@ -1,69 +1,83 @@
 # Go E-commerce API
 
-This project is a Go-based API for an e-commerce platform. It is designed to be a microservice that will eventually interact with other services, such as an authentication service.
+## Go E-commerce API
 
-## Current Status
+[![Go Version](https://img.shields.io/badge/go-1.24.2-blue.svg)](https://golang.org)
+[![Docker](https://img.shields.io/badge/docker-%20%20-blue.svg?logo=docker)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/docker--compose-%20%20-blue.svg?logo=docker)](https://docs.docker.com/compose/)
+[![Make](https://img.shields.io/badge/make-%20%20-lightgrey.svg?logo=gnu-make)](#)
 
-The project is in its initial setup phase. The following has been configured:
+Proyecto API REST en Go para una plataforma de e-commerce. Este repositorio contiene la API, la lógica de negocio y utilidades para gestionar productos, usuarios, roles y autenticación.
 
-- **Project Structure:** A standard Go project layout with `cmd`, `internal`, and `pkg` directories.
-- **Configuration:** The application is configured using environment variables, with an `.env.example` file provided as a template. The `godotenv` library is used to load these variables.
-- **Database:** The project is set up to connect to a PostgreSQL database. The `pq` driver is used for the connection.
-- **HTTP Server:** An HTTP server is set up using the `chi` router.
-- **Health Check:** A basic health check endpoint is available at `/health` to monitor the service's status.
-- **Docker:** The project includes a `Dockerfile` for building a production-ready container and a `docker-compose.yml` file for setting up a local development environment with a PostgreSQL database.
-- **Makefile:** A `Makefile` is provided with commands for common development tasks.
+## Estado actual
 
-## Getting Started
+El proyecto está avanzado: estructura modular, conexión a PostgreSQL, autenticación JWT, manejo de contraseñas, y endpoints para productos, usuarios y health-check. Principales componentes:
 
-### Prerequisites
+- Estructura: `cmd/`, `internal/`, `pkg/`.
+- Configuración: variables por entorno, carga con `godotenv`.
+- Base de datos: PostgreSQL con migraciones en `internal/database/migrations` y seeds en `internal/database/seeds`.
+- Router HTTP: `chi` (en `internal/*/routes.go`).
+- Seguridad: JWT (paquete `github.com/golang-jwt/jwt/v5`) y hashing de contraseñas (`golang.org/x/crypto`).
+- Docker: `Dockerfile` y `docker-compose.yml` para desarrollo local.
+- Makefile con comandos útiles (arranque, build, tests, docker-up/down, etc.).
 
-- [Go](https://golang.org/)
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [make](https://www.gnu.org/software/make/)
+## Requisitos
 
-### Installation
+- Go 1.24.2 (ver `go.mod`).
+- Docker
+- Docker Compose
+- make
 
-1.  **Clone the repository:**
+## Rápido arranque
 
-    ```bash
-    git clone https://github.com/your-username/go-ecommerce-service.git
-    cd go-ecommerce-service
-    ```
+1. Clona el repositorio:
 
-2.  **Create a `.env` file:**
+```bash
+git clone https://github.com/AlvaroVFon/go-ecommerce-service.git
+cd go-ecommerce-service
+```
 
-    Copy the `.env.example` file to a new file named `.env` and update the variables as needed.
+2. Copia el ejemplo de variables de entorno y ajústalas:
 
-    ```bash
-    cp .env.example .env
-    ```
+```bash
+cp .env.example .env
+# editar .env según tu entorno
+```
 
-3.  **Start the database:**
+3. Inicia servicios dependientes (Postgres) con Docker Compose:
 
-    Use Docker Compose to start the PostgreSQL database service.
+```bash
+make docker-up
+```
 
-    ```bash
-    make docker-up
-    ```
+4. Ejecuta la aplicación en modo desarrollo:
 
-4.  **Run the application:**
+```bash
+make run
+```
 
-    ```bash
-    make run
-    ```
+La API quedará disponible en http://localhost:8080 (por defecto).
 
-The API will be running at `http://localhost:8080`.
+## Endpoints principales
 
-## Available Commands
+- Health: GET /health
+- Productos: rutas definidas en `internal/products` (crear, listar, obtener, actualizar, eliminar)
+- Usuarios: rutas en `internal/users` (registro, login, gestión)
+- Roles: `internal/roles` y seeds iniciales en `internal/database/seeds`
 
-The following commands are available in the `Makefile`:
+Consulta el código en `internal/` para ver handlers y servicios concretos.
 
-- `run`: Run the application.
-- `build`: Build the application binary.
-- `test`: Run the tests.
-- `lint`: Lint the code.
-- `docker-up`: Start the Docker containers for the development environment.
-- `docker-down`: Stop the Docker containers.
-- `clean`: Clean up build artifacts.
+## Comandos disponibles (Makefile)
+
+- `make run` - Ejecutar la aplicación en desarrollo
+- `make build` - Construir binario
+- `make test` - Ejecutar tests
+- `make lint` - Ejecutar linters
+- `make docker-up` - Levantar contenedores (Postgres)
+- `make docker-down` - Parar contenedores
+- `make clean` - Limpiar artefactos
+
+## Notas para desarrolladores
+
+- Las migraciones SQL están en `internal/database/migrations`.
+- Los seeds iniciales para roles y usuarios están en `internal/database/seeds`.
