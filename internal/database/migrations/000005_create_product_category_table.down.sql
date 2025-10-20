@@ -1,1 +1,1 @@
-DROP TABLE IDF EXISTS product_category;
+DROP TABLE IF EXISTS product_category;

@@ -53,7 +53,7 @@ func (h *CategoryHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.categoryService.FindByID(ctx, id)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Failed to fetch category")
+		httpx.Error(w, http.StatusNotFound, "Category not found")
 		return
 	}
 
@@ -71,7 +71,7 @@ func (h *CategoryHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.categoryService.FindByName(ctx, name)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Failed to fetch category")
+		httpx.Error(w, http.StatusNotFound, "Category not found")
 		return
 	}
 
