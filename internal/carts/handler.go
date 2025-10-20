@@ -2,10 +2,11 @@ package carts
 
 import (
 	"context"
-	"ecommerce-service/pkg/httpx"
 	"log"
 	"net/http"
 	"strconv"
+
+	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -20,12 +21,12 @@ type (
 	}
 	CartHandler struct {
 		cartService Service
-		validate    *validator.Validate
+		validate    validator.Validate
 	}
 )
 
 func NewCartHandler(cartService Service) *CartHandler {
-	return &CartHandler{cartService: cartService}
+	return &CartHandler{cartService: cartService, validate: *validator.New()}
 }
 
 func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {

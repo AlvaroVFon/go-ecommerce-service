@@ -4,7 +4,6 @@ package carts
 import "time"
 
 type CartItem struct {
-	ID            int64     `json:"id"`
 	CartID        int64     `json:"cart_id"`
 	ProductID     int64     `json:"product_id"`
 	Name          string    `json:"name"`
@@ -29,7 +28,7 @@ type Cart struct {
 	Tax      int64 `json:"tax"`
 	Total    int64 `json:"total"` // Subtotal - Discount + Tax
 
-	// Metadatos
+	// Metadata
 	Status    string     `json:"status"` // e.g., "active", "abandoned", "completed"
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`

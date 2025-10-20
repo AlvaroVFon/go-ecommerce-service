@@ -1,6 +1,5 @@
 -- +migration no-transaction
 CREATE TABLE IF NOT EXISTS cart_items (
-    ID SERIAL PRIMARY KEY,
     cart_id INT NOT NULL,
     product_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -13,5 +12,6 @@ CREATE TABLE IF NOT EXISTS cart_items (
     added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_cart FOREIGN KEY(cart_id) REFERENCES carts(id) ON DELETE CASCADE,
-    CONSTRAINT fk_product FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+    CONSTRAINT fk_product FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+    PRIMARY KEY (cart_id, product_id)
 );
