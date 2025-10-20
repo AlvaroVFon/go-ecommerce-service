@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"ecommerce-service/internal/auth"
 	"ecommerce-service/internal/auth/strategies"
+	"ecommerce-service/internal/carts"
 	"ecommerce-service/internal/categories"
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/products"
@@ -79,12 +80,18 @@ func Bootstrap() (*Bootstrapper, error) {
 	categoryService := categories.NewCategoryService(categoryRepository)
 	categoryHandler := categories.NewCategoryHandler(categoryService)
 
+	// cart module
+	cartRepository := carts.NewCartRepository(b.DB)
+	cartService := carts.NewCartService(cartRepository)
+	cartHandler := carts.NewCartHandler(cartService)
+
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
 	users.RegisterRoutes(b.Router, userHandler)
 	products.RegisterRoutes(b.Router, productHandler)
 	auth.RegisterRoutes(b.Router, authHandler)
 	categories.RegisterRoutes(b.Router, categoryHandler)
+	carts.RegisterRoutes(b.Router, cartHandler)
 
 	return &b, nil
 }
