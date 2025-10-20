@@ -39,8 +39,7 @@ func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := uh.validate.Struct(req)
 	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		httpx.Error(w, http.StatusBadRequest, validationErrors.Error())
+		httpx.JSON(w, http.StatusBadRequest, httpx.FormatValidatorErrors(err))
 		return
 	}
 
@@ -107,8 +106,7 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = uh.validate.Struct(req); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		httpx.Error(w, http.StatusBadRequest, validationErrors.Error())
+		httpx.JSON(w, http.StatusBadRequest, httpx.FormatValidatorErrors(err))
 		return
 	}
 
