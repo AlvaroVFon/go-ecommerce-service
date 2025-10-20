@@ -8,23 +8,23 @@ type (
 		FindByID(ctx context.Context, id int) (*Category, error)
 		FindByName(ctx context.Context, name string) (*Category, error)
 	}
-	CategoryServoce struct {
+	CategoryService struct {
 		categoryRepo Repository
 	}
 )
 
-func NewCategoryService(categoryRepo Repository) *CategoryServoce {
-	return &CategoryServoce{categoryRepo: categoryRepo}
+func NewCategoryService(categoryRepo Repository) *CategoryService {
+	return &CategoryService{categoryRepo: categoryRepo}
 }
 
-func (s *CategoryServoce) FindAll(ctx context.Context) ([]Category, error) {
+func (s *CategoryService) FindAll(ctx context.Context) ([]Category, error) {
 	return s.categoryRepo.FindAll(ctx)
 }
 
-func (s *CategoryServoce) FindByID(ctx context.Context, id int) (*Category, error) {
+func (s *CategoryService) FindByID(ctx context.Context, id int) (*Category, error) {
 	return s.categoryRepo.FindByID(ctx, id)
 }
 
-func (s *CategoryServoce) FindByName(ctx context.Context, name string) (*Category, error) {
+func (s *CategoryService) FindByName(ctx context.Context, name string) (*Category, error) {
 	return s.categoryRepo.FindByName(ctx, name)
 }

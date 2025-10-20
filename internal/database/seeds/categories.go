@@ -13,7 +13,7 @@ func SeedCategories(db *sql.DB) error {
 		{Name: "Home & Kitchen", Description: "Household items and kitchenware"},
 		{Name: "Sports & Outdoors", Description: "Sporting goods and outdoor equipment"},
 	}
-	query := "INSERT INTO categories (name, description) VALUES ($1, $2)"
+	query := "INSERT INTO categories (name, description) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING"
 
 	for _, category := range categories {
 		if _, err := db.Exec(query, category.Name, category.Description); err != nil {

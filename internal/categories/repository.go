@@ -5,15 +5,15 @@ import (
 	"database/sql"
 )
 
-type CateogoryRepository struct {
+type CategoryRepository struct {
 	db *sql.DB
 }
 
-func NewCategoryRepository(db *sql.DB) *CateogoryRepository {
-	return &CateogoryRepository{db: db}
+func NewCategoryRepository(db *sql.DB) *CategoryRepository {
+	return &CategoryRepository{db: db}
 }
 
-func (r *CateogoryRepository) FindAll(ctx context.Context) ([]Category, error) {
+func (r *CategoryRepository) FindAll(ctx context.Context) ([]Category, error) {
 	query := "SELECT id, name, description FROM categories"
 
 	rows, err := r.db.QueryContext(ctx, query)
@@ -34,7 +34,7 @@ func (r *CateogoryRepository) FindAll(ctx context.Context) ([]Category, error) {
 	return categories, nil
 }
 
-func (r *CateogoryRepository) FindByID(ctx context.Context, id int) (*Category, error) {
+func (r *CategoryRepository) FindByID(ctx context.Context, id int) (*Category, error) {
 	query := "SELECT id, name, description FROM categories WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	var category Category
@@ -46,7 +46,7 @@ func (r *CateogoryRepository) FindByID(ctx context.Context, id int) (*Category, 
 	return &category, nil
 }
 
-func (r *CateogoryRepository) FindByName(ctx context.Context, name string) (*Category, error) {
+func (r *CategoryRepository) FindByName(ctx context.Context, name string) (*Category, error) {
 	query := "SELECT id, name, description FROM categories WHERE name = $1"
 	row := r.db.QueryRowContext(ctx, query, name)
 	var category Category
