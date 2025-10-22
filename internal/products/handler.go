@@ -67,12 +67,12 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	offsetStr := r.URL.Query().Get("offset")
 
 	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
+	if limitStr != "" && err != nil {
 		httpx.Error(w, http.StatusBadRequest, "Invalid limit parameter")
 		return
 	}
 	offset, err := strconv.Atoi(offsetStr)
-	if err != nil {
+	if offsetStr != "" && err != nil {
 		httpx.Error(w, http.StatusBadRequest, "Invalid offset parameter")
 		return
 	}

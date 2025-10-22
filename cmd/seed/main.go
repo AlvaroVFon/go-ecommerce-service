@@ -2,9 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/database/seeds"
-	"fmt"
 )
 
 func main() {
@@ -16,6 +17,8 @@ func main() {
 		seeds.SeedRoles,
 		seeds.SeedUsers,
 		seeds.SeedCategories,
+		seeds.SeedProducts,
+		seeds.SeedProductCategory,
 	}
 
 	for _, seeder := range seeders {

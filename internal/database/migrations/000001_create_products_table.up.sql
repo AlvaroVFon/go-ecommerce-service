@@ -1,7 +1,7 @@
 -- +migrate no-transaction
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     description TEXT,
     price NUMERIC(10,2) NOT NULL,
     stock INT DEFAULT 0,
