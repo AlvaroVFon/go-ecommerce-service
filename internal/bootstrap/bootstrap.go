@@ -3,15 +3,17 @@ package bootstrap
 
 import (
 	"database/sql"
+	"log"
+
 	"ecommerce-service/internal/auth"
 	"ecommerce-service/internal/auth/strategies"
 	"ecommerce-service/internal/carts"
 	"ecommerce-service/internal/categories"
 	"ecommerce-service/internal/config"
+	"ecommerce-service/internal/orders"
 	"ecommerce-service/internal/products"
 	"ecommerce-service/internal/tokens"
 	"ecommerce-service/internal/users"
-	"log"
 
 	healthcheck "ecommerce-service/internal/health-check"
 
@@ -85,6 +87,11 @@ func Bootstrap() (*Bootstrapper, error) {
 	cartService := carts.NewCartService(cartRepository)
 	cartHandler := carts.NewCartHandler(cartService)
 
+	// orders module
+	orderRepository := orders.NewOrderRepository(b.DB)
+	orderService := orders.NewOrderService(orderRepository)
+	orderHandler := orders.NewOrderHandler(orderService)
+
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
 	users.RegisterRoutes(b.Router, userHandler)
@@ -92,6 +99,7 @@ func Bootstrap() (*Bootstrapper, error) {
 	auth.RegisterRoutes(b.Router, authHandler)
 	categories.RegisterRoutes(b.Router, categoryHandler)
 	carts.RegisterRoutes(b.Router, cartHandler)
+	orders.RegisterRoutes(b.Router, orderHandler)
 
 	return &b, nil
 }
