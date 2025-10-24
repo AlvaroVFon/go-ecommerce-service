@@ -46,8 +46,8 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = ph.validate.Struct(product)
 	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		httpx.Error(w, http.StatusBadRequest, validationErrors.Error())
+		validationErrors := httpx.FormatValidatorErrors(err)
+		httpx.Errors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 
@@ -127,8 +127,8 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = ph.validate.Struct(product)
 	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		httpx.Error(w, http.StatusBadRequest, validationErrors.Error())
+		validationErrors := httpx.FormatValidatorErrors(err)
+		httpx.Errors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 

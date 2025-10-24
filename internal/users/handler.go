@@ -2,11 +2,12 @@ package users
 
 import (
 	"context"
-	"ecommerce-service/pkg/httpx"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
+
+	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -39,7 +40,8 @@ func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := uh.validate.Struct(req)
 	if err != nil {
-		httpx.JSON(w, http.StatusBadRequest, httpx.FormatValidatorErrors(err))
+		validationErrors := httpx.FormatValidatorErrors(err)
+		httpx.Errors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 
@@ -106,7 +108,8 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = uh.validate.Struct(req); err != nil {
-		httpx.JSON(w, http.StatusBadRequest, httpx.FormatValidatorErrors(err))
+		validationErrors := httpx.FormatValidatorErrors(err)
+		httpx.Errors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 

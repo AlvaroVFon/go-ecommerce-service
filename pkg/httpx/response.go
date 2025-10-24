@@ -32,6 +32,10 @@ func Error(w http.ResponseWriter, status int, message string) {
 	JSON(w, status, map[string]string{"error": message})
 }
 
+func Errors(w http.ResponseWriter, status int, messages map[string]string) {
+	JSON(w, status, map[string]map[string]string{"errors": messages})
+}
+
 func FormatValidatorErrors(err error) map[string]string {
 	errors := make(map[string]string)
 	for _, err := range err.(validator.ValidationErrors) {
