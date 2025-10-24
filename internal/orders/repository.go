@@ -24,7 +24,7 @@ func (r *OrderRepository) Create(ctx context.Context, o *CreateOrderRequest) err
 	return err
 }
 
-func (r *OrderRepository) FindByID(ctx context.Context, id string) (*Order, error) {
+func (r *OrderRepository) FindByID(ctx context.Context, id int) (*Order, error) {
 	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 
@@ -38,7 +38,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, id string) (*Order, erro
 	return &o, nil
 }
 
-func (r *OrderRepository) ListByUserID(ctx context.Context, userID string) ([]*Order, error) {
+func (r *OrderRepository) ListByUserID(ctx context.Context, userID int) ([]*Order, error) {
 	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE user_id = $1"
 	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {

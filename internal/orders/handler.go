@@ -4,17 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"ecommerce-service/pkg/httpx"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 )
 
 type (
 	Service interface {
 		Create(ctx context.Context, o *CreateOrderRequest) error
-		FindByID(ctx context.Context, id string) (*Order, error)
-		ListByUserID(ctx context.Context, userID string) ([]*Order, error)
+		FindByID(ctx context.Context, id int) (*Order, error)
+		ListByUserID(ctx context.Context, userID int) ([]*Order, error)
 		Update(ctx context.Context, id int, o *UpdateOrderRequest) error
 		Delete(ctx context.Context, id int) error
 	}
@@ -48,10 +50,63 @@ func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.orderService.Create(ctx, &req); err != nil {
+	httpx.JSON(w, http.StatusCreated, map[string]string{"message": "order created successfully"})
+}
+
+func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid order ID")
+		return
+	}
+
+	order, err := h.orderService.FindByID(ctx, id)
+	if err != nil {
+		httpx.Error(w, http.StatusNotFound, "Order not found")
+		return
+	}
+
+	httpx.JSON(w, http.StatusOK, order)
+}
+
+// TODO: Paginate results
+func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid user ID")
+		return
+	}
+	orders, err := h.orderService.ListByUserID(ctx, id)
+	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	httpx.JSON(w, http.StatusCreated, map[string]string{"message": "order created successfully"})
+	httpx.JSON(w, http.StatusOK, orders)
+}
+
+func (h *OrdersHandler) Update(w http.ResponseWriter, r *http.Request) {}
+
+func (h *OrdersHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid order ID")
+		return
+	}
+
+	if err := h.orderService.Delete(ctx, id); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	httpx.JSON(w, http.StatusNoContent, map[string]string{})
 }
