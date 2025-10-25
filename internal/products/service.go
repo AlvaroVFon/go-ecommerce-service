@@ -10,7 +10,7 @@ import (
 type Repository interface {
 	Create(ctx context.Context, data CreateProductRequest) error
 	FindByID(ctx context.Context, id int) (*Product, error)
-	FindAll(ctx context.Context, limit, page int) ([]Product, error)
+	FindAll(ctx context.Context, limit, offset int) ([]Product, error)
 	Update(ctx context.Context, id int, data UpdateProductRequest) error
 	Delete(ctx context.Context, id int) error
 	Count(ctx context.Context) (int, error)

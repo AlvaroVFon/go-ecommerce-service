@@ -3,10 +3,11 @@ package users
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
+	"ecommerce-service/internal/config"
+	"ecommerce-service/internal/utils"
 	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -16,18 +17,20 @@ import (
 type Service interface {
 	Create(ctx context.Context, u *CreateUserRequest) error
 	FindByID(ctx context.Context, id int) (*User, error)
-	FindAll(ctx context.Context) ([]User, error)
+	FindAll(ctx context.Context, page, limit int) ([]User, error)
 	Update(ctx context.Context, id int, u UpdateUserRequest) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context) (int, error)
 }
 
 type UserHandler struct {
 	userService Service
 	validate    *validator.Validate
+	config      *config.Config
 }
 
-func NewUserHandler(userService Service) *UserHandler {
-	return &UserHandler{userService: userService, validate: validator.New()}
+func NewUserHandler(userService Service, config *config.Config) *UserHandler {
+	return &UserHandler{userService: userService, validate: validator.New(), config: config}
 }
 
 func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -78,18 +81,27 @@ func (uh *UserHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 
 func (uh *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	users, err := uh.userService.FindAll(ctx)
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit := utils.ParsePaginationParams(limitStr, pageStr, uh.config.Limit, uh.config.MaxLimit)
+	total, err := uh.userService.Count(ctx)
+	if err != nil {
+		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+
+	users, err := uh.userService.FindAll(ctx, page, limit)
 	publicUsers := []PublicUser{}
 	for _, u := range users {
 		publicUsers = append(publicUsers, PublicUser{u.ID, u.Email, u.CreatedAt, u.UpdatedAt})
 	}
 	if err != nil {
-		log.Println("error fetching users:", err)
 		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, &publicUsers)
+	httpx.HTTPPaginatedResponse(w, http.StatusOK, &publicUsers, page, limit, total)
 }
 
 func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {

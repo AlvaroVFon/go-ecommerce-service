@@ -55,7 +55,7 @@ func Bootstrap() (*Bootstrapper, error) {
 	// user module
 	userRepository := users.NewUserRepository(b.DB)
 	userService := users.NewUserService(userRepository, b.Config)
-	userHandler := users.NewUserHandler(userService)
+	userHandler := users.NewUserHandler(userService, b.Config)
 
 	// token module
 	tokenService := tokens.NewTokenService(b.Config)
