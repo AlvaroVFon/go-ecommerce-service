@@ -2,9 +2,11 @@ package categories
 
 import (
 	"context"
-	"ecommerce-service/pkg/httpx"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -13,8 +15,8 @@ type (
 	Service interface {
 		FindAll(ctx context.Context) ([]Category, error)
 		FindByID(ctx context.Context, id int) (*Category, error)
-		FindByName(ctx context.Context, name string) (*Category, error)
 	}
+
 	CategoryHandler struct {
 		categoryService Service
 	}
@@ -26,11 +28,21 @@ func NewCategoryHandler(categoryService Service) *CategoryHandler {
 
 func (h *CategoryHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	name := r.URL.Query().Get("name")
 
 	categories, err := h.categoryService.FindAll(ctx)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "Failed to fetch categories")
 		return
+	}
+
+	if name != "" {
+		for _, category := range categories {
+			if strings.EqualFold(category.Name, name) {
+				httpx.JSON(w, http.StatusOK, []Category{category})
+				return
+			}
+		}
 	}
 
 	httpx.JSON(w, http.StatusOK, categories)
@@ -52,24 +64,6 @@ func (h *CategoryHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	category, err := h.categoryService.FindByID(ctx, id)
-	if err != nil {
-		httpx.Error(w, http.StatusNotFound, "Category not found")
-		return
-	}
-
-	httpx.JSON(w, http.StatusOK, category)
-}
-
-func (h *CategoryHandler) FindByName(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	name := chi.URLParam(r, "name")
-	if name == "" {
-		httpx.Error(w, http.StatusBadRequest, "Category name is required")
-		return
-	}
-
-	category, err := h.categoryService.FindByName(ctx, name)
 	if err != nil {
 		httpx.Error(w, http.StatusNotFound, "Category not found")
 		return

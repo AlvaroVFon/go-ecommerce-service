@@ -45,14 +45,3 @@ func (r *CategoryRepository) FindByID(ctx context.Context, id int) (*Category, e
 
 	return &category, nil
 }
-
-func (r *CategoryRepository) FindByName(ctx context.Context, name string) (*Category, error) {
-	query := "SELECT id, name, description FROM categories WHERE name = $1"
-	row := r.db.QueryRowContext(ctx, query, name)
-	var category Category
-	if err := row.Scan(&category.ID, &category.Name, &category.Description); err != nil {
-		return nil, err
-	}
-
-	return &category, nil
-}

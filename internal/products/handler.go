@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"ecommerce-service/internal/config"
 	"ecommerce-service/pkg/httpx"
@@ -63,24 +64,35 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	name := r.URL.Query().Get("name")
 	limitStr := r.URL.Query().Get("limit")
-	offsetStr := r.URL.Query().Get("offset")
+	pageStr := r.URL.Query().Get("page")
 
 	limit, err := strconv.Atoi(limitStr)
 	if limitStr != "" && err != nil {
 		httpx.Error(w, http.StatusBadRequest, "Invalid limit parameter")
 		return
 	}
-	offset, err := strconv.Atoi(offsetStr)
-	if offsetStr != "" && err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid offset parameter")
+
+	page, err := strconv.Atoi(pageStr)
+	if pageStr != "" && err != nil {
+		httpx.Error(w, http.StatusBadRequest, "Invalid page parameter")
 		return
 	}
 
-	products, err := ph.productService.FindAll(ctx, limit, offset)
+	products, err := ph.productService.FindAll(ctx, limit, page)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "Error fetching products")
 		return
+	}
+
+	if name != "" {
+		for _, product := range products {
+			if strings.EqualFold(product.Name, name) {
+				httpx.JSON(w, http.StatusOK, []Product{product})
+				return
+			}
+		}
 	}
 
 	if products == nil {

@@ -24,8 +24,9 @@ type Config struct {
 	DBSSLMode  string
 
 	// pagination
-	Limit  int
-	Offset int
+	Limit    int
+	MaxLimit int
+	Offset   int
 
 	// Cryptox
 	BcryptCost int
@@ -76,6 +77,11 @@ func LoadEnvVars() *Config {
 		log.Fatalf("JWT_REFRESH_EXP debe ser un número válido: %v", err)
 	}
 
+	MaxLimit, err := strconv.Atoi(getEnv("PAGINATION_MAX_LIMIT", "30"))
+	if err != nil {
+		log.Fatalf("PAGINATION_MAX_LIMIT debe ser un número válido: %v", err)
+	}
+
 	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
 		AppEnv:  getEnv("APP_ENV", "development"),
@@ -89,8 +95,9 @@ func LoadEnvVars() *Config {
 		DBName:     getEnv("DB_NAME", "ecommerce_db"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 
-		Limit:  limit,
-		Offset: offset,
+		Limit:    limit,
+		MaxLimit: MaxLimit,
+		Offset:   offset,
 
 		BcryptCost: bcryptCost,
 
