@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/utils"
@@ -66,7 +65,6 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	name := r.URL.Query().Get("name")
 	limitStr := r.URL.Query().Get("limit")
 	pageStr := r.URL.Query().Get("page")
 
@@ -81,15 +79,6 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httpx.HTTPError(w, http.StatusInternalServerError, "Error fetching products")
 		return
-	}
-
-	if name != "" {
-		for _, product := range products {
-			if strings.EqualFold(product.Name, name) {
-				httpx.HTTPResponse(w, http.StatusOK, []Product{product})
-				return
-			}
-		}
 	}
 
 	if products == nil {
