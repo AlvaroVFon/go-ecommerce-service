@@ -2,10 +2,11 @@ package auth
 
 import (
 	"context"
-	"ecommerce-service/internal/config"
-	"ecommerce-service/pkg/httpx"
 	"net/http"
 	"strings"
+
+	"ecommerce-service/internal/config"
+	"ecommerce-service/pkg/httpx"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -33,7 +34,7 @@ func (am *AuthMiddleware) VerifyToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("Authorization")
 		if headerToken == "" {
-			httpx.Error(w, http.StatusUnauthorized, "Missing Authorization header")
+			httpx.HTTPError(w, http.StatusUnauthorized, "Missing Authorization header")
 			return
 		}
 
@@ -41,13 +42,13 @@ func (am *AuthMiddleware) VerifyToken(next http.Handler) http.Handler {
 
 		token, err := am.tokenService.VerifyToken(tokenStr, am.config.JWTSecret)
 		if err != nil || !token.Valid {
-			httpx.Error(w, http.StatusUnauthorized, "Invalid token")
+			httpx.HTTPError(w, http.StatusUnauthorized, "Invalid token")
 			return
 		}
 
 		claims, err := am.tokenService.ExtractClaims(token)
 		if err != nil {
-			httpx.Error(w, http.StatusUnauthorized, "Failed to extract claims")
+			httpx.HTTPError(w, http.StatusUnauthorized, "Failed to extract claims")
 			return
 		}
 

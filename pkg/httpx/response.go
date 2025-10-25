@@ -11,10 +11,23 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func JSON(w http.ResponseWriter, status int, data any) {
+func HTTPResponse(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func HTTPPaginatedResponse(w http.ResponseWriter, status int, data any, page, limit, total int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(map[string]any{
+		"data":        data,
+		"total":       total,
+		"page":        page,
+		"total_pages": (total + limit - 1) / limit,
+	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -28,12 +41,12 @@ func ParseJSON(r *http.Request, dst any) error {
 	return json.NewDecoder(r.Body).Decode(&dst)
 }
 
-func Error(w http.ResponseWriter, status int, message string) {
-	JSON(w, status, map[string]string{"error": message})
+func HTTPError(w http.ResponseWriter, status int, message string) {
+	HTTPResponse(w, status, map[string]string{"error": message})
 }
 
-func Errors(w http.ResponseWriter, status int, messages map[string]string) {
-	JSON(w, status, map[string]map[string]string{"errors": messages})
+func HTTPErrors(w http.ResponseWriter, status int, messages map[string]string) {
+	HTTPResponse(w, status, map[string]map[string]string{"errors": messages})
 }
 
 func FormatValidatorErrors(err error) map[string]string {

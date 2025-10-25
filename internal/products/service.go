@@ -39,16 +39,7 @@ func (ps *ProductService) FindByID(ctx context.Context, id int) (*Product, error
 }
 
 func (ps *ProductService) FindAll(ctx context.Context, limit, page int) ([]Product, error) {
-	if limit <= 0 {
-		limit = ps.config.Limit
-	}
-
-	if limit > ps.config.MaxLimit {
-		limit = ps.config.MaxLimit
-	}
-
 	offset := (page - 1) * limit
-
 	return ps.productRepo.FindAll(ctx, limit, offset)
 }
 
@@ -58,4 +49,8 @@ func (ps *ProductService) Update(ctx context.Context, id int, p UpdateProductReq
 
 func (ps *ProductService) Delete(ctx context.Context, id int) error {
 	return ps.productRepo.Delete(ctx, id)
+}
+
+func (ps *ProductService) Count(ctx context.Context) (int, error) {
+	return ps.productRepo.Count(ctx)
 }

@@ -32,20 +32,20 @@ func (h *CategoryHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.categoryService.FindAll(ctx)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Failed to fetch categories")
+		httpx.HTTPError(w, http.StatusInternalServerError, "Failed to fetch categories")
 		return
 	}
 
 	if name != "" {
 		for _, category := range categories {
 			if strings.EqualFold(category.Name, name) {
-				httpx.JSON(w, http.StatusOK, []Category{category})
+				httpx.HTTPResponse(w, http.StatusOK, []Category{category})
 				return
 			}
 		}
 	}
 
-	httpx.JSON(w, http.StatusOK, categories)
+	httpx.HTTPResponse(w, http.StatusOK, categories)
 }
 
 func (h *CategoryHandler) FindByID(w http.ResponseWriter, r *http.Request) {
@@ -53,21 +53,21 @@ func (h *CategoryHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 
 	idStr := chi.URLParam(r, "id")
 	if idStr == "" {
-		httpx.Error(w, http.StatusBadRequest, "Category ID is required")
+		httpx.HTTPError(w, http.StatusBadRequest, "Category ID is required")
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid category ID")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid category ID")
 		return
 	}
 
 	category, err := h.categoryService.FindByID(ctx, id)
 	if err != nil {
-		httpx.Error(w, http.StatusNotFound, "Category not found")
+		httpx.HTTPError(w, http.StatusNotFound, "Category not found")
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, category)
+	httpx.HTTPResponse(w, http.StatusOK, category)
 }

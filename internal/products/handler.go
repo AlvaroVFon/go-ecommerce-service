@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"ecommerce-service/internal/config"
+	"ecommerce-service/internal/utils"
 	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -20,6 +21,7 @@ type Service interface {
 	FindAll(ctx context.Context, limit, offset int) ([]Product, error)
 	Update(ctx context.Context, id int, data UpdateProductRequest) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context) (int, error)
 }
 
 type ProductHandler struct {
@@ -41,24 +43,24 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	product := &CreateProductRequest{}
 	err := json.NewDecoder(r.Body).Decode(product)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
 	err = ph.validate.Struct(product)
 	if err != nil {
 		validationErrors := httpx.FormatValidatorErrors(err)
-		httpx.Errors(w, http.StatusBadRequest, validationErrors)
+		httpx.HTTPErrors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 
 	err = ph.productService.Create(ctx, product)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Error creating product")
+		httpx.HTTPError(w, http.StatusInternalServerError, "Error creating product")
 		return
 	}
 
-	httpx.JSON(w, http.StatusCreated, map[string]string{"message": "Product created successfully"})
+	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": "Product created successfully"})
 }
 
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
@@ -68,28 +70,23 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	pageStr := r.URL.Query().Get("page")
 
-	limit, err := strconv.Atoi(limitStr)
-	if limitStr != "" && err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid limit parameter")
-		return
-	}
-
-	page, err := strconv.Atoi(pageStr)
-	if pageStr != "" && err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid page parameter")
+	page, limit := utils.ParsePaginationParams(pageStr, limitStr, ph.config.Limit, ph.config.MaxLimit)
+	total, err := ph.productService.Count(ctx)
+	if err != nil {
+		httpx.HTTPError(w, http.StatusInternalServerError, "Error counting products")
 		return
 	}
 
 	products, err := ph.productService.FindAll(ctx, limit, page)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Error fetching products")
+		httpx.HTTPError(w, http.StatusInternalServerError, "Error fetching products")
 		return
 	}
 
 	if name != "" {
 		for _, product := range products {
 			if strings.EqualFold(product.Name, name) {
-				httpx.JSON(w, http.StatusOK, []Product{product})
+				httpx.HTTPResponse(w, http.StatusOK, []Product{product})
 				return
 			}
 		}
@@ -99,7 +96,7 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 		products = []Product{}
 	}
 
-	httpx.JSON(w, http.StatusOK, products)
+	httpx.HTTPPaginatedResponse(w, http.StatusOK, products, page, limit, total)
 }
 
 func (ph *ProductHandler) FindByID(w http.ResponseWriter, r *http.Request) {
@@ -107,19 +104,19 @@ func (ph *ProductHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
 	product, err := ph.productService.FindByID(ctx, id)
 	if err != nil && product == nil {
-		httpx.Error(w, http.StatusNotFound, "Product not found")
+		httpx.HTTPError(w, http.StatusNotFound, "Product not found")
 		return
 	} else if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Error fetching product")
+		httpx.HTTPError(w, http.StatusInternalServerError, "Error fetching product")
 	}
 
-	httpx.JSON(w, http.StatusOK, &product)
+	httpx.HTTPResponse(w, http.StatusOK, &product)
 }
 
 func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -127,30 +124,30 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
 	product := UpdateProductRequest{}
 	if err = json.NewDecoder(r.Body).Decode(&product); err != nil || product == (UpdateProductRequest{}) {
-		httpx.Error(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
 	err = ph.validate.Struct(product)
 	if err != nil {
 		validationErrors := httpx.FormatValidatorErrors(err)
-		httpx.Errors(w, http.StatusBadRequest, validationErrors)
+		httpx.HTTPErrors(w, http.StatusBadRequest, validationErrors)
 		return
 	}
 
 	err = ph.productService.Update(ctx, id, product)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, err.Error())
+		httpx.HTTPError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, map[string]string{"message": "Product updated successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "Product updated successfully"})
 }
 
 func (ph *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -158,13 +155,13 @@ func (ph *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
 	err = ph.productService.Delete(ctx, id)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "Error deleting product")
+		httpx.HTTPError(w, http.StatusInternalServerError, "Error deleting product")
 		return
 	}
 
