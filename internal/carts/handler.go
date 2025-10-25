@@ -2,7 +2,6 @@ package carts
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -34,14 +33,13 @@ func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	cartIDStr := chi.URLParam(r, "id")
 	cartID, err := strconv.ParseInt(cartIDStr, 10, 64)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid cart ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	cart, err := h.cartService.GetCart(ctx, cartID)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusNotFound, "Not Found")
-		log.Println("Error retrieving cart:", err)
+		httpx.HTTPError(w, http.StatusNotFound, httpx.NotFoundError)
 		return
 	}
 
@@ -54,7 +52,7 @@ func (h *CartHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
@@ -64,7 +62,7 @@ func (h *CartHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := httpx.ParseJSON(r, &req); err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Bad Request")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -75,7 +73,7 @@ func (h *CartHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 
 	cart, err := h.cartService.AddItemToCart(ctx, userID, req.ProductID, req.Quantity)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Failed to add item to cart")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -87,16 +85,16 @@ func (h *CartHandler) ClearCart(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 	err = h.cartService.ClearCart(ctx, userID)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Failed to clear cart")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "Cart cleared successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.DeletedResponse})
 }
 
 func (h *CartHandler) CompleteCart(w http.ResponseWriter, r *http.Request) {
@@ -104,14 +102,14 @@ func (h *CartHandler) CompleteCart(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 	err = h.cartService.CompleteCart(ctx, userID)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Failed to complete cart")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "Cart completed successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.OkResponse})
 }

@@ -42,7 +42,7 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	product := &CreateProductRequest{}
 	err := json.NewDecoder(r.Body).Decode(product)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -55,11 +55,11 @@ func (ph *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = ph.productService.Create(ctx, product)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Error creating product")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": "Product created successfully"})
+	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": httpx.CreatedResponse})
 }
 
 func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
@@ -71,13 +71,13 @@ func (ph *ProductHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	page, limit := utils.ParsePaginationParams(pageStr, limitStr, ph.config.Limit, ph.config.MaxLimit)
 	total, err := ph.productService.Count(ctx)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Error counting products")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
 	products, err := ph.productService.FindAll(ctx, limit, page)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Error fetching products")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -93,16 +93,16 @@ func (ph *ProductHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	product, err := ph.productService.FindByID(ctx, id)
 	if err != nil && product == nil {
-		httpx.HTTPError(w, http.StatusNotFound, "Product not found")
+		httpx.HTTPError(w, http.StatusNotFound, httpx.NotFoundError)
 		return
 	} else if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Error fetching product")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 	}
 
 	httpx.HTTPResponse(w, http.StatusOK, &product)
@@ -113,13 +113,13 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	product := UpdateProductRequest{}
 	if err = json.NewDecoder(r.Body).Decode(&product); err != nil || product == (UpdateProductRequest{}) {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (ph *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "Product updated successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.UpdatedResponse})
 }
 
 func (ph *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -144,15 +144,15 @@ func (ph *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid product ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	err = ph.productService.Delete(ctx, id)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Error deleting product")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.DeletedResponse})
 }

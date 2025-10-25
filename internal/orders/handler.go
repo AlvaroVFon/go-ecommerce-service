@@ -35,7 +35,7 @@ func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreateOrderRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "invalid request body")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -46,11 +46,11 @@ func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.orderService.Create(ctx, &req); err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, err.Error())
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": "order created successfully"})
+	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": httpx.CreatedResponse})
 }
 
 func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
@@ -59,13 +59,13 @@ func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "invalid order ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	order, err := h.orderService.FindByID(ctx, id)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusNotFound, "Order not found")
+		httpx.HTTPError(w, http.StatusNotFound, httpx.NotFoundError)
 		return
 	}
 
@@ -79,12 +79,12 @@ func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 	orders, err := h.orderService.ListByUserID(ctx, id)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, err.Error())
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -99,12 +99,12 @@ func (h *OrdersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "invalid order ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	if err := h.orderService.Delete(ctx, id); err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, err.Error())
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 

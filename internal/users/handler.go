@@ -37,7 +37,7 @@ func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req := CreateUserRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -49,11 +49,11 @@ func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := uh.userService.Create(ctx, &req); err != nil {
-		httpx.HTTPError(w, http.StatusConflict, "User with this email already exists")
+		httpx.HTTPError(w, http.StatusConflict, httpx.ConflictError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": "user created successfully"})
+	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": httpx.CreatedResponse})
 }
 
 func (uh *UserHandler) FindByID(w http.ResponseWriter, r *http.Request) {
@@ -61,16 +61,16 @@ func (uh *UserHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	u, err := uh.userService.FindByID(ctx, id)
 	if err != nil && u == nil {
-		httpx.HTTPError(w, http.StatusNotFound, "User not found")
+		httpx.HTTPError(w, http.StatusNotFound, httpx.NotFoundError)
 		return
 	} else if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (uh *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	page, limit := utils.ParsePaginationParams(pageStr, limitStr, uh.config.Limit, uh.config.MaxLimit)
 	total, err := uh.userService.Count(ctx)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -97,7 +97,7 @@ func (uh *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 		publicUsers = append(publicUsers, PublicUser{u.ID, u.Email, u.CreatedAt, u.UpdatedAt})
 	}
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -109,13 +109,13 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	req := UpdateUserRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req == (UpdateUserRequest{}) {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
@@ -126,11 +126,11 @@ func (uh *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := uh.userService.Update(ctx, id, req); err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "user updated successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.UpdatedResponse})
 }
 
 func (uh *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -139,14 +139,14 @@ func (uh *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid user ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	if err := uh.userService.Delete(ctx, id); err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "User not found")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": "user deleted successfully"})
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{"message": httpx.DeletedResponse})
 }

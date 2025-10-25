@@ -30,7 +30,7 @@ func (h *CategoryHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.categoryService.FindAll(ctx)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "Failed to fetch categories")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
@@ -42,19 +42,19 @@ func (h *CategoryHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 
 	idStr := chi.URLParam(r, "id")
 	if idStr == "" {
-		httpx.HTTPError(w, http.StatusBadRequest, "Category ID is required")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "Invalid category ID")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
 
 	category, err := h.categoryService.FindByID(ctx, id)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusNotFound, "Category not found")
+		httpx.HTTPError(w, http.StatusNotFound, httpx.NotFoundError)
 		return
 	}
 
