@@ -84,7 +84,7 @@ func (uh *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 
-	page, limit := utils.ParsePaginationParams(limitStr, pageStr, uh.config.Limit, uh.config.MaxLimit)
+	page, limit := utils.ParsePaginationParams(pageStr, limitStr, uh.config.Limit, uh.config.MaxLimit)
 	total, err := uh.userService.Count(ctx)
 	if err != nil {
 		httpx.HTTPError(w, http.StatusInternalServerError, "Internal server error")
