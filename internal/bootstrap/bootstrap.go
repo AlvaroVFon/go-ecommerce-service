@@ -18,6 +18,7 @@ import (
 	healthcheck "ecommerce-service/internal/health-check"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 type Bootstrapper struct {
@@ -47,6 +48,9 @@ func Bootstrap() (*Bootstrapper, error) {
 		Router: r,
 	}
 
+	// validator
+	validate := validator.New()
+
 	// Initialize modules
 
 	// health-check module
@@ -55,7 +59,7 @@ func Bootstrap() (*Bootstrapper, error) {
 	// user module
 	userRepository := users.NewUserRepository(b.DB)
 	userService := users.NewUserService(userRepository, b.Config)
-	userHandler := users.NewUserHandler(userService, b.Config)
+	userHandler := users.NewUserHandler(userService, validate, b.Config)
 
 	// token module
 	tokenService := tokens.NewTokenService(b.Config)
@@ -75,22 +79,22 @@ func Bootstrap() (*Bootstrapper, error) {
 	// Initialize product module
 	productRepository := products.NewProductRepository(b.DB)
 	productService := products.NewProductService(productRepository, b.Config)
-	productHandler := products.NewProductHandler(productService)
+	productHandler := products.NewProductHandler(productService, validate, b.Config)
 
 	// category module
 	categoryRepository := categories.NewCategoryRepository(b.DB)
 	categoryService := categories.NewCategoryService(categoryRepository)
-	categoryHandler := categories.NewCategoryHandler(categoryService)
+	categoryHandler := categories.NewCategoryHandler(categoryService, b.Config)
 
 	// cart module
 	cartRepository := carts.NewCartRepository(b.DB)
 	cartService := carts.NewCartService(cartRepository)
-	cartHandler := carts.NewCartHandler(cartService)
+	cartHandler := carts.NewCartHandler(cartService, validate)
 
 	// orders module
 	orderRepository := orders.NewOrderRepository(b.DB)
 	orderService := orders.NewOrderService(orderRepository)
-	orderHandler := orders.NewOrderHandler(orderService)
+	orderHandler := orders.NewOrderHandler(orderService, validate, b.Config)
 
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)

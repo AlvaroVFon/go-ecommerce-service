@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"ecommerce-service/internal/config"
+	"ecommerce-service/internal/utils"
 	"ecommerce-service/pkg/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -16,19 +18,21 @@ type (
 	Service interface {
 		Create(ctx context.Context, o *CreateOrderRequest) error
 		FindByID(ctx context.Context, id int) (*Order, error)
-		ListByUserID(ctx context.Context, userID int) ([]*Order, error)
+		ListByUserID(ctx context.Context, userID, page, limit int) ([]*Order, error)
 		Update(ctx context.Context, id int, o *UpdateOrderRequest) error
 		Delete(ctx context.Context, id int) error
+		CountByUserID(ctx context.Context, userID int) (int, error)
 	}
 
 	OrdersHandler struct {
 		orderService Service
-		validate     validator.Validate
+		validate     *validator.Validate
+		config       *config.Config
 	}
 )
 
-func NewOrderHandler(orderService Service) *OrdersHandler {
-	return &OrdersHandler{orderService: orderService, validate: *validator.New()}
+func NewOrderHandler(orderService Service, validate *validator.Validate, config *config.Config) *OrdersHandler {
+	return &OrdersHandler{orderService: orderService, validate: validate, config: config}
 }
 
 func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -72,23 +76,33 @@ func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	httpx.HTTPResponse(w, http.StatusOK, order)
 }
 
-// TODO: Paginate results
 func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	idStr := chi.URLParam(r, "id")
+	limitStr := r.URL.Query().Get("limit")
+	pageStr := r.URL.Query().Get("page")
+
+	page, limit := utils.ParsePaginationParams(pageStr, limitStr, h.config.Limit, h.config.MaxLimit)
+
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		httpx.HTTPError(w, http.StatusBadRequest, httpx.InvalidIDError)
 		return
 	}
-	orders, err := h.orderService.ListByUserID(ctx, id)
+
+	total, err := h.orderService.CountByUserID(ctx, id)
+	if err != nil {
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
+		return
+	}
+	orders, err := h.orderService.ListByUserID(ctx, id, page, limit)
 	if err != nil {
 		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusOK, orders)
+	httpx.HTTPPaginatedResponse(w, http.StatusOK, orders, page, limit, total)
 }
 
 func (h *OrdersHandler) Update(w http.ResponseWriter, r *http.Request) {}

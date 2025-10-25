@@ -20,12 +20,12 @@ type (
 	}
 	CartHandler struct {
 		cartService Service
-		validate    validator.Validate
+		validate    *validator.Validate
 	}
 )
 
-func NewCartHandler(cartService Service) *CartHandler {
-	return &CartHandler{cartService: cartService, validate: *validator.New()}
+func NewCartHandler(cartService Service, validate *validator.Validate) *CartHandler {
+	return &CartHandler{cartService: cartService, validate: validate}
 }
 
 func (h *CartHandler) GetCart(w http.ResponseWriter, r *http.Request) {
