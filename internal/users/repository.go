@@ -50,7 +50,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*User, 
 }
 
 func (r *UserRepository) FindAll(ctx context.Context, limit, offset int) ([]User, error) {
-	query := "SELECT id, email, password, role_id, created_at, updated_at FROM users LIMIT $1 OFFSET $2"
+	query := "SELECT id, email, password, role_id, created_at, updated_at FROM users ORDER BY id LIMIT $1 OFFSET $2"
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
