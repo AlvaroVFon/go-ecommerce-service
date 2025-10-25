@@ -34,19 +34,19 @@ func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req strategies.PasswordCredentials
 	err := httpx.ParseJSON(r, &req)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusBadRequest, "invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, httpx.BadRequestError)
 		return
 	}
 
 	u, err := ah.authService.Authenticate(ctx, "password", req)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusUnauthorized, "authentication failed")
+		httpx.HTTPError(w, http.StatusUnauthorized, httpx.UnauthorizedError)
 		return
 	}
 
 	accessToken, refreshToken, err := ah.tokensService.GenerateTokens(u.ID)
 	if err != nil {
-		httpx.HTTPError(w, http.StatusInternalServerError, "failed to generate tokens")
+		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
