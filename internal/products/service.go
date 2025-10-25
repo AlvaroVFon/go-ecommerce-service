@@ -2,8 +2,9 @@ package products
 
 import (
 	"context"
-	"ecommerce-service/internal/config"
 	"log"
+
+	"ecommerce-service/internal/config"
 )
 
 type Repository interface {
@@ -12,6 +13,7 @@ type Repository interface {
 	FindAll(ctx context.Context, limit, offset int) ([]Product, error)
 	Update(ctx context.Context, id int, data UpdateProductRequest) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context) (int, error)
 }
 
 type ProductService struct {
@@ -36,14 +38,8 @@ func (ps *ProductService) FindByID(ctx context.Context, id int) (*Product, error
 	return ps.productRepo.FindByID(ctx, id)
 }
 
-func (ps *ProductService) FindAll(ctx context.Context, limit, offset int) ([]Product, error) {
-	if limit <= 0 {
-		limit = ps.config.Limit
-	}
-
-	if offset < 0 {
-		offset = 0
-	}
+func (ps *ProductService) FindAll(ctx context.Context, limit, page int) ([]Product, error) {
+	offset := (page - 1) * limit
 	return ps.productRepo.FindAll(ctx, limit, offset)
 }
 
@@ -53,4 +49,8 @@ func (ps *ProductService) Update(ctx context.Context, id int, p UpdateProductReq
 
 func (ps *ProductService) Delete(ctx context.Context, id int) error {
 	return ps.productRepo.Delete(ctx, id)
+}
+
+func (ps *ProductService) Count(ctx context.Context) (int, error) {
+	return ps.productRepo.Count(ctx)
 }

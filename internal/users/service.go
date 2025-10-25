@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+
 	"ecommerce-service/internal/config"
 	"ecommerce-service/pkg/cryptox"
 )
@@ -9,10 +10,11 @@ import (
 type Repository interface {
 	Create(ctx context.Context, u *CreateUserRequest) error
 	FindByID(ctx context.Context, id int) (*User, error)
-	FindAll(ctx context.Context) ([]User, error)
+	FindAll(ctx context.Context, page, offset int) ([]User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	Update(ctx context.Context, id int, u UpdateUserRequest) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context) (int, error)
 }
 
 type UserService struct {
@@ -42,8 +44,9 @@ func (us *UserService) FindByEmail(ctx context.Context, email string) (*User, er
 	return us.userRepo.FindByEmail(ctx, email)
 }
 
-func (us *UserService) FindAll(ctx context.Context) ([]User, error) {
-	return us.userRepo.FindAll(ctx)
+func (us *UserService) FindAll(ctx context.Context, page, limit int) ([]User, error) {
+	offset := (page - 1) * limit
+	return us.userRepo.FindAll(ctx, limit, offset)
 }
 
 func (us *UserService) Update(ctx context.Context, id int, u UpdateUserRequest) error {
@@ -65,4 +68,8 @@ func (us *UserService) Update(ctx context.Context, id int, u UpdateUserRequest) 
 
 func (us *UserService) Delete(ctx context.Context, id int) error {
 	return us.userRepo.Delete(ctx, id)
+}
+
+func (us *UserService) Count(ctx context.Context) (int, error) {
+	return us.userRepo.Count(ctx)
 }

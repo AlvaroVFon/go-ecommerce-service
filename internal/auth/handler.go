@@ -2,10 +2,11 @@ package auth
 
 import (
 	"context"
+	"net/http"
+
 	"ecommerce-service/internal/auth/strategies"
 	"ecommerce-service/internal/users"
 	"ecommerce-service/pkg/httpx"
-	"net/http"
 )
 
 type (
@@ -33,23 +34,23 @@ func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req strategies.PasswordCredentials
 	err := httpx.ParseJSON(r, &req)
 	if err != nil {
-		httpx.Error(w, http.StatusBadRequest, "invalid request payload")
+		httpx.HTTPError(w, http.StatusBadRequest, "invalid request payload")
 		return
 	}
 
 	u, err := ah.authService.Authenticate(ctx, "password", req)
 	if err != nil {
-		httpx.Error(w, http.StatusUnauthorized, "authentication failed")
+		httpx.HTTPError(w, http.StatusUnauthorized, "authentication failed")
 		return
 	}
 
 	accessToken, refreshToken, err := ah.tokensService.GenerateTokens(u.ID)
 	if err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "failed to generate tokens")
+		httpx.HTTPError(w, http.StatusInternalServerError, "failed to generate tokens")
 		return
 	}
 
-	httpx.JSON(w, http.StatusOK, map[string]string{
+	httpx.HTTPResponse(w, http.StatusOK, map[string]string{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	})

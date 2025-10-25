@@ -39,7 +39,7 @@ func (pr *ProductRepository) FindByID(ctx context.Context, id int) (*Product, er
 }
 
 func (pr *ProductRepository) FindAll(ctx context.Context, limit, offset int) ([]Product, error) {
-	query := "SELECT id, name, price, description, stock, created_at, updated_at FROM products LIMIT $1 OFFSET $2"
+	query := "SELECT id, name, price, description, stock, created_at, updated_at FROM products ORDER BY id LIMIT $1 OFFSET $2"
 
 	rows, err := pr.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
@@ -143,14 +143,11 @@ func (pr *ProductRepository) Delete(ctx context.Context, id int) error {
 
 func (pr *ProductRepository) Count(ctx context.Context) (int, error) {
 	query := "SELECT COUNT(*) FROM products"
-	row, err := pr.db.QueryContext(ctx, query)
-	if err != nil {
-		return 0, err
-	}
+	row := pr.db.QueryRowContext(ctx, query)
+
 	var count int
 	if err := row.Scan(&count); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error scanning product count: %v", err)
 	}
-
 	return count, nil
 }
