@@ -12,8 +12,6 @@ type OrderRepository struct {
 	db *sql.DB
 }
 
-var ErrOrderNotFound error = fmt.Errorf("Order not found")
-
 func NewOrderRepository(db *sql.DB) *OrderRepository {
 	return &OrderRepository{db: db}
 }
@@ -31,16 +29,16 @@ func (r *OrderRepository) FindByID(ctx context.Context, id int) (*Order, error) 
 	var o Order
 	if err := row.Scan(&o.ID, &o.UserID, &o.CartID, &o.ShippingAddress, &o.PaymentMethod, &o.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrOrderNotFound
+			return nil, err
 		}
 		return nil, err
 	}
 	return &o, nil
 }
 
-func (r *OrderRepository) ListByUserID(ctx context.Context, userID int) ([]*Order, error) {
-	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE user_id = $1"
-	rows, err := r.db.QueryContext(ctx, query, userID)
+func (r *OrderRepository) ListByUserID(ctx context.Context, userID, limit, offset int) ([]*Order, error) {
+	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE user_id = $1 LIMIT $2 OFFSET $3"
+	rows, err := r.db.QueryContext(ctx, query, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -113,4 +111,15 @@ func (r *OrderRepository) Delete(ctx context.Context, id int) error {
 	query := "DELETE FROM orders WHERE id = $1"
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
+}
+
+func (r *OrderRepository) CountByUserID(ctx context.Context, userID int) (int, error) {
+	query := "SELECT COUNT(*) FROM orders WHERE user_id = $1"
+	row := r.db.QueryRowContext(ctx, query, userID)
+
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+	return count, nil
 }

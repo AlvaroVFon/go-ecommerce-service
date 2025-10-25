@@ -29,8 +29,8 @@ type UserHandler struct {
 	config      *config.Config
 }
 
-func NewUserHandler(userService Service, config *config.Config) *UserHandler {
-	return &UserHandler{userService: userService, validate: validator.New(), config: config}
+func NewUserHandler(userService Service, validate *validator.Validate, config *config.Config) *UserHandler {
+	return &UserHandler{userService: userService, validate: validate, config: config}
 }
 
 func (uh *UserHandler) Create(w http.ResponseWriter, r *http.Request) {

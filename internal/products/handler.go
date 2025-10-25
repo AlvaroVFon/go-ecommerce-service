@@ -29,11 +29,11 @@ type ProductHandler struct {
 	config         *config.Config
 }
 
-func NewProductHandler(productService Service) *ProductHandler {
+func NewProductHandler(productService Service, validate *validator.Validate, config *config.Config) *ProductHandler {
 	return &ProductHandler{
 		productService: productService,
-		validate:       validator.New(),
-		config:         config.LoadEnvVars(),
+		validate:       validate,
+		config:         config,
 	}
 }
 
