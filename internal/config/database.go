@@ -9,8 +9,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func ConnectDatabase() (*sql.DB, error) {
-	connectionString := generateConnectionString(LoadEnvVars())
+func ConnectDatabase(c *Config) (*sql.DB, error) {
+	connectionString := generateConnectionString(c)
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)

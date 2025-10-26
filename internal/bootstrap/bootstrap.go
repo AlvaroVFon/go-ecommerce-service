@@ -29,10 +29,10 @@ type Bootstrapper struct {
 
 func Bootstrap() (*Bootstrapper, error) {
 	// Load environment variables
-	envVars := config.LoadEnvVars()
+	c := config.LoadEnvVars()
 
 	// Connect to the database
-	db, err := config.ConnectDatabase()
+	db, err := config.ConnectDatabase(c)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)
 		return nil, err
@@ -43,7 +43,7 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Create the bootstrapper instance
 	b := Bootstrapper{
-		Config: envVars,
+		Config: c,
 		DB:     db,
 		Router: r,
 	}
