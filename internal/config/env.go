@@ -45,42 +45,20 @@ func LoadEnvVars() *Config {
 	}
 
 	// Leer y parsear variables
-	dbPort, err := strconv.Atoi(getEnv("DB_PORT", "5433"))
-	if err != nil {
-		log.Fatalf("DB_PORT debe ser un número válido: %v", err)
-	}
+	dbPort := getIntEnv("DB_PORT", 5432)
 
 	// pagination
-	limit, err := strconv.Atoi(getEnv("PAGINATION_LIMIT", "10"))
-	if err != nil {
-		log.Fatalf("PAGINATION_LIMIT debe ser un número válido: %v", err)
-	}
+	limit := getIntEnv("PAGINATION_LIMIT", 10)
+	MaxLimit := getIntEnv("PAGINATION_MAX_LIMIT", 100)
 
-	offset, err := strconv.Atoi(getEnv("PAGINATION_OFFSET", "0"))
-	if err != nil {
-		log.Fatalf("PAGINATION_OFFSET debe ser un número válido: %v", err)
-	}
+	offset := getIntEnv("PAGINATION_OFFSET", 0)
 
 	// cryptox
-	bcryptCost, err := strconv.Atoi(getEnv("BCRYPT_COST", "10"))
-	if err != nil {
-		log.Fatalf("BCRYPT_COST debe ser un número válido: %v", err)
-	}
+	bcryptCost := getIntEnv("BCRYPT_COST", 10)
 
-	JWTExp, err := strconv.Atoi(getEnv("JWT_EXP", "3600"))
-	if err != nil {
-		log.Fatalf("JWT_EXP debe ser un número válido: %v", err)
-	}
-
-	JWTRefreshExp, err := strconv.Atoi(getEnv("JWT_REFRESH_EXP", "86400"))
-	if err != nil {
-		log.Fatalf("JWT_REFRESH_EXP debe ser un número válido: %v", err)
-	}
-
-	MaxLimit, err := strconv.Atoi(getEnv("PAGINATION_MAX_LIMIT", "30"))
-	if err != nil {
-		log.Fatalf("PAGINATION_MAX_LIMIT debe ser un número válido: %v", err)
-	}
+	// jwt
+	JWTExp := getIntEnv("JWT_EXP", 3600)
+	JWTRefreshExp := getIntEnv("JWT_REFRESH_EXP", 86400)
 
 	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
@@ -114,6 +92,15 @@ func LoadEnvVars() *Config {
 func getEnv(key, defaultValue string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
+	}
+	return defaultValue
+}
+
+func getIntEnv(key string, defaultValue int) int {
+	if val := os.Getenv(key); val != "" {
+		if intValue, err := strconv.Atoi(val); err == nil {
+			return intValue
+		}
 	}
 	return defaultValue
 }

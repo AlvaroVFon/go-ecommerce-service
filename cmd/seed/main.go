@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	db, err := config.ConnectDatabase()
+	c := config.LoadEnvVars()
+	db, err := config.ConnectDatabase(c)
 	if err != nil {
 		return
 	}
