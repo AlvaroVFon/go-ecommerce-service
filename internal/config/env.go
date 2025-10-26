@@ -41,24 +41,45 @@ type Config struct {
 func LoadEnvVars() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("⚠️  No se pudo cargar .env, usando variables del sistema")
+		log.Println("⚠️ No se pudo cargar .env, usando variables del sistema")
 	}
 
 	// Leer y parsear variables
-	dbPort := getIntEnv("DB_PORT", 5432)
+	dbPort, err := getIntEnv("DB_PORT", 5432)
+	if err != nil {
+		log.Printf("⚠️ Error al leer DB_PORT: %v", err)
+	}
 
 	// pagination
-	limit := getIntEnv("PAGINATION_LIMIT", 10)
-	MaxLimit := getIntEnv("PAGINATION_MAX_LIMIT", 100)
+	limit, err := getIntEnv("PAGINATION_LIMIT", 10)
+	if err != nil {
+		log.Printf("⚠️ Error al leer PAGINATION_LIMIT: %v", err)
+	}
+	MaxLimit, err := getIntEnv("PAGINATION_MAX_LIMIT", 100)
+	if err != nil {
+		log.Printf("⚠️ Error al leer PAGINATION_MAX_LIMIT: %v", err)
+	}
 
-	offset := getIntEnv("PAGINATION_OFFSET", 0)
+	offset, err := getIntEnv("PAGINATION_OFFSET", 0)
+	if err != nil {
+		log.Printf("⚠️ Error al leer PAGINATION_OFFSET: %v", err)
+	}
 
 	// cryptox
-	bcryptCost := getIntEnv("BCRYPT_COST", 10)
+	bcryptCost, err := getIntEnv("BCRYPT_COST", 10)
+	if err != nil {
+		log.Printf("⚠️ Error al leer BCRYPT_COST: %v", err)
+	}
 
 	// jwt
-	JWTExp := getIntEnv("JWT_EXP", 3600)
-	JWTRefreshExp := getIntEnv("JWT_REFRESH_EXP", 86400)
+	JWTExp, err := getIntEnv("JWT_EXP", 3600)
+	if err != nil {
+		log.Printf("⚠️ Error al leer JWT_EXP: %v", err)
+	}
+	JWTRefreshExp, err := getIntEnv("JWT_REFRESH_EXP", 86400)
+	if err != nil {
+		log.Printf("⚠️ Error al leer JWT_REFRESH_EXP: %v", err)
+	}
 
 	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
@@ -96,11 +117,13 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func getIntEnv(key string, defaultValue int) int {
+func getIntEnv(key string, defaultValue int) (int, error) {
 	if val := os.Getenv(key); val != "" {
-		if intValue, err := strconv.Atoi(val); err == nil {
-			return intValue
+		if intValue, err := strconv.Atoi(val); err != nil {
+			return 0, err
+		} else {
+			return intValue, nil
 		}
 	}
-	return defaultValue
+	return defaultValue, nil
 }
