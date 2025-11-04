@@ -20,6 +20,10 @@ func main() {
 		seeds.SeedCategories,
 		seeds.SeedProducts,
 		seeds.SeedProductCategory,
+		seeds.SeedCarts,
+		seeds.SeedCartItems,
+		seeds.SeedOrders,
+		seeds.SeedOrderItems,
 	}
 
 	for _, seeder := range seeders {

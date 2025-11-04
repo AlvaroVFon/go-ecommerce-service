@@ -1,6 +1,8 @@
 package categories
 
-import "context"
+import (
+	"context"
+)
 
 type (
 	Repository interface {
@@ -17,7 +19,7 @@ func NewCategoryService(categoryRepo Repository) *CategoryService {
 	return &CategoryService{categoryRepo: categoryRepo}
 }
 
-func (s *CategoryService) FindAll(ctx context.Context, limit, page int) ([]Category, error) {
+func (s *CategoryService) FindAll(ctx context.Context, page, limit int) ([]Category, error) {
 	offset := (page - 1) * limit
 	return s.categoryRepo.FindAll(ctx, limit, offset)
 }

@@ -1,9 +1,9 @@
 -- +migration no-transaction
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    cart_id INTEGER NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    total NUMERIC(12, 2) NOT NULL,
     shipping_address TEXT NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

@@ -1,7 +1,9 @@
 // Package utils provides utility functions for common tasks.
 package utils
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func ParsePaginationParams(pageStr, limitStr string, defaultLimit, maxLimit int) (page int, limit int) {
 	page, err := strconv.Atoi(pageStr)
