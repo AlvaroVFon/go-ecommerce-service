@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -17,17 +18,17 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 }
 
 func (r *OrderRepository) Create(ctx context.Context, o *CreateOrderRequest) error {
-	query := "INSERT INTO orders (user_id, cart_id, shipping_address, payment_method) VALUES ($1, $2, $3, $4)"
-	_, err := r.db.ExecContext(ctx, query, o.UserID, o.CartID, o.ShippingAddress, o.PaymentMethod)
+	query := "INSERT INTO orders (user_id, shipping_address, payment_method) VALUES ($1, $2, $3, $4)"
+	_, err := r.db.ExecContext(ctx, query, o.UserID, o.ShippingAddress, o.PaymentMethod)
 	return err
 }
 
 func (r *OrderRepository) FindByID(ctx context.Context, id int) (*Order, error) {
-	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE id = $1"
+	query := "SELECT id, user_id, shipping_address, payment_method, created_at FROM orders WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, id)
 
 	var o Order
-	if err := row.Scan(&o.ID, &o.UserID, &o.CartID, &o.ShippingAddress, &o.PaymentMethod, &o.CreatedAt); err != nil {
+	if err := row.Scan(&o.ID, &o.UserID, &o.ShippingAddress, &o.PaymentMethod, &o.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, err
 		}
@@ -37,17 +38,21 @@ func (r *OrderRepository) FindByID(ctx context.Context, id int) (*Order, error) 
 }
 
 func (r *OrderRepository) ListByUserID(ctx context.Context, userID, limit, offset int) ([]*Order, error) {
-	query := "SELECT id, user_id, cart_id, shipping_address, payment_method, created_at FROM orders WHERE user_id = $1 LIMIT $2 OFFSET $3"
+	query := "SELECT id, user_id, shipping_address, payment_method, created_at FROM orders WHERE user_id = $1 LIMIT $2 OFFSET $3"
 	rows, err := r.db.QueryContext(ctx, query, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Fatal("Eror closing rows")
+		}
+	}()
 
 	var orders []*Order
 	for rows.Next() {
 		var o Order
-		if err := rows.Scan(&o.ID, &o.UserID, &o.CartID, &o.ShippingAddress, &o.PaymentMethod, &o.CreatedAt); err != nil {
+		if err := rows.Scan(&o.ID, &o.UserID, &o.ShippingAddress, &o.PaymentMethod, &o.CreatedAt); err != nil {
 			return nil, err
 		}
 		orders = append(orders, &o)

@@ -12,6 +12,7 @@ import (
 	"ecommerce-service/internal/config"
 	"ecommerce-service/internal/orders"
 	"ecommerce-service/internal/products"
+	"ecommerce-service/internal/roles"
 	"ecommerce-service/internal/tokens"
 	"ecommerce-service/internal/users"
 
@@ -56,6 +57,11 @@ func Bootstrap() (*Bootstrapper, error) {
 	// health-check module
 	healthCheckHandler := healthcheck.NewHealthCheckHandler()
 
+	// roles module
+	roleRepository := roles.NewRoleRepository(db)
+	roleService := roles.NewRoleService(roleRepository)
+	roleHandler := roles.NewRoleHandler(roleService)
+
 	// user module
 	userRepository := users.NewUserRepository(b.DB)
 	userService := users.NewUserService(userRepository, b.Config)
@@ -98,6 +104,7 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// Register routes
 	healthcheck.RegisterRoutes(b.Router, healthCheckHandler)
+	roles.RegisterRoutes(b.Router, roleHandler)
 	users.RegisterRoutes(b.Router, userHandler)
 	products.RegisterRoutes(b.Router, productHandler)
 	auth.RegisterRoutes(b.Router, authHandler)
