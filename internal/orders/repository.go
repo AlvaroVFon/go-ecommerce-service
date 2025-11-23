@@ -17,10 +17,43 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 	return &OrderRepository{db: db}
 }
 
-func (r *OrderRepository) Create(ctx context.Context, o *CreateOrderRequest) error {
-	query := "INSERT INTO orders (user_id, shipping_address, payment_method) VALUES ($1, $2, $3, $4)"
-	_, err := r.db.ExecContext(ctx, query, o.UserID, o.ShippingAddress, o.PaymentMethod)
-	return err
+func (r *OrderRepository) Create(ctx context.Context, order *Order) (*Order, error) {
+	// Start a transaction
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error starting transaction: %w", err)
+	}
+	// Defer a rollback in case of panic
+	defer tx.Rollback()
+
+	// 1. Insert into orders table and get the new order ID
+	orderQuery := "INSERT INTO orders (user_id, total, status, shipping_address, payment_method) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at"
+	err = tx.QueryRowContext(ctx, orderQuery, order.UserID, order.Total, order.Status, order.ShippingAddress, order.PaymentMethod).Scan(&order.ID, &order.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("error inserting order: %w", err)
+	}
+
+	// 2. Prepare statement for inserting order items
+	itemStmt, err := tx.PrepareContext(ctx, "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)")
+	if err != nil {
+		return nil, fmt.Errorf("error preparing order item statement: %w", err)
+	}
+	defer itemStmt.Close()
+
+	// 3. Insert all order items
+	for i, item := range order.Items {
+		_, err := itemStmt.ExecContext(ctx, order.ID, item.ProductID, item.Quantity, item.Price)
+		if err != nil {
+			return nil, fmt.Errorf("error inserting order item #%d: %w", i+1, err)
+		}
+	}
+
+	// 4. Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("error committing transaction: %w", err)
+	}
+
+	return order, nil
 }
 
 func (r *OrderRepository) FindByID(ctx context.Context, id int) (*Order, error) {

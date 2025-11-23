@@ -99,7 +99,7 @@ func Bootstrap() (*Bootstrapper, error) {
 
 	// orders module
 	orderRepository := orders.NewOrderRepository(b.DB)
-	orderService := orders.NewOrderService(orderRepository)
+	orderService := orders.NewOrderService(orderRepository, cartRepository)
 	orderHandler := orders.NewOrderHandler(orderService, validate, b.Config)
 
 	// Register routes
