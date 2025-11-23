@@ -59,12 +59,13 @@ func (s *OrderService) CreateOrderFromCart(ctx context.Context, req *CreateOrder
 	var total float64
 	orderItems := make([]OrderItem, 0, len(cartItems))
 	for _, item := range cartItems {
-		price := float64(item.SnapshotPrice)
-		total += price * float64(item.Quantity)
+		price := float64(item.TotalPrice) / 100.0 // Convert cents to dollars, includes discount
+		total += price
+		unitPrice := price / float64(item.Quantity)
 		orderItems = append(orderItems, OrderItem{
 			ProductID: item.ProductID,
 			Quantity:  int(item.Quantity),
-			Price:     price,
+			Price:     unitPrice, // Unit price after discount
 		})
 	}
 
