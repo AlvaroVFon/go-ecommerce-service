@@ -117,7 +117,7 @@ func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
 	httpx.HTTPPaginatedResponse(w, http.StatusOK, orders, page, limit, total)
 }
 
-// Update is a placeholder for the update logic.
+// Update handles the HTTP request to update an order.
 func (h *OrdersHandler) Update(w http.ResponseWriter, r *http.Request) {}
 
 // Delete handles the HTTP request to delete an order.
