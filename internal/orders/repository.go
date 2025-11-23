@@ -23,8 +23,12 @@ func (r *OrderRepository) Create(ctx context.Context, order *Order) (*Order, err
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
 	}
-	// Defer a rollback in case of panic
-	defer tx.Rollback()
+	// Defer a rollback only if an error occurs
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// 1. Insert into orders table and get the new order ID
 	orderQuery := "INSERT INTO orders (user_id, total, status, shipping_address, payment_method) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at"
