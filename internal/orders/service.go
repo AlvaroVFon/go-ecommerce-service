@@ -86,12 +86,24 @@ func (s *OrderService) CreateOrderFromCart(ctx context.Context, req *CreateOrder
 	}
 
 	// 5. Mark cart as completed and clear it.
-	// Log errors but don't fail the order creation, as these are cleanup steps.
+	// If either cleanup step fails, roll back the order and return an error.
 	if err := s.cartRepo.SetCompleted(ctx, req.CartID); err != nil {
-		log.Printf("warning: failed to mark cart %d as completed: %v\n", req.CartID, err)
+		log.Printf("error: failed to mark cart %d as completed: %v\n", req.CartID, err)
+		// Compensating transaction: delete the created order
+		if delErr := s.orderRepo.Delete(ctx, createdOrder.ID); delErr != nil {
+			log.Printf("critical: failed to delete order %d after cart cleanup failure: %v\n", createdOrder.ID, delErr)
+			return nil, fmt.Errorf("failed to mark cart as completed (and failed to roll back order): %v, %v", err, delErr)
+		}
+		return nil, fmt.Errorf("failed to mark cart as completed: %w (order rolled back)", err)
 	}
 	if err := s.cartRepo.ClearCart(ctx, req.CartID); err != nil {
-		log.Printf("warning: failed to clear cart %d: %v\n", req.CartID, err)
+		log.Printf("error: failed to clear cart %d: %v\n", req.CartID, err)
+		// Compensating transaction: delete the created order
+		if delErr := s.orderRepo.Delete(ctx, createdOrder.ID); delErr != nil {
+			log.Printf("critical: failed to delete order %d after cart cleanup failure: %v\n", createdOrder.ID, delErr)
+			return nil, fmt.Errorf("failed to clear cart (and failed to roll back order): %v, %v", err, delErr)
+		}
+		return nil, fmt.Errorf("failed to clear cart: %w (order rolled back)", err)
 	}
 
 	return createdOrder, nil
