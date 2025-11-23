@@ -30,6 +30,8 @@ type CreateOrderRequest struct {
 }
 
 type UpdateOrderRequest struct {
+	// Status validation must use string literals (Go struct tag limitation)
+	// Valid values: OrderStatusPending, OrderStatusProcessing, OrderStatusShipped, OrderStatusDelivered, OrderStatusCancelled
 	Status          *string `json:"status" validate:"required,oneof=pending processing shipped delivered cancelled"`
 	ShippingAddress *string `json:"shipping_address,omitempty"`
 }
