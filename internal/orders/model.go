@@ -1,6 +1,15 @@
 // Package orders defines the data models for the orders module.
 package orders
 
+// Order status constants
+const (
+	OrderStatusPending    = "pending"
+	OrderStatusProcessing = "processing"
+	OrderStatusShipped    = "shipped"
+	OrderStatusDelivered  = "delivered"
+	OrderStatusCancelled  = "cancelled"
+)
+
 type Order struct {
 	ID              int64       `json:"id"`
 	UserID          int64       `json:"user_id"`
@@ -21,6 +30,8 @@ type CreateOrderRequest struct {
 }
 
 type UpdateOrderRequest struct {
+	// Status validation must use string literals (Go struct tag limitation)
+	// Valid values: OrderStatusPending, OrderStatusProcessing, OrderStatusShipped, OrderStatusDelivered, OrderStatusCancelled
 	Status          *string `json:"status" validate:"required,oneof=pending processing shipped delivered cancelled"`
 	ShippingAddress *string `json:"shipping_address,omitempty"`
 }
