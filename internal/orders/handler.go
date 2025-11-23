@@ -3,6 +3,7 @@ package orders
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -15,8 +16,9 @@ import (
 )
 
 type (
+	// Service interface defines the methods we expect from our OrderService.
 	Service interface {
-		Create(ctx context.Context, o *CreateOrderRequest) error
+		CreateOrderFromCart(ctx context.Context, o *CreateOrderRequest) (*Order, error)
 		FindByID(ctx context.Context, id int) (*Order, error)
 		ListByUserID(ctx context.Context, userID, page, limit int) ([]*Order, error)
 		Update(ctx context.Context, id int, o *UpdateOrderRequest) error
@@ -24,6 +26,7 @@ type (
 		CountByUserID(ctx context.Context, userID int) (int, error)
 	}
 
+	// OrdersHandler is the HTTP handler for orders.
 	OrdersHandler struct {
 		orderService Service
 		validate     *validator.Validate
@@ -31,10 +34,12 @@ type (
 	}
 )
 
+// NewOrderHandler creates a new OrdersHandler.
 func NewOrderHandler(orderService Service, validate *validator.Validate, config *config.Config) *OrdersHandler {
 	return &OrdersHandler{orderService: orderService, validate: validate, config: config}
 }
 
+// Create handles the HTTP request to create a new order from a cart.
 func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreateOrderRequest
@@ -49,14 +54,20 @@ func (h *OrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.orderService.Create(ctx, &req); err != nil {
+	createdOrder, err := h.orderService.CreateOrderFromCart(ctx, &req)
+	if err != nil {
+		if errors.Is(err, ErrEmptyCart) {
+			httpx.HTTPError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		httpx.HTTPError(w, http.StatusInternalServerError, httpx.InternalServerError)
 		return
 	}
 
-	httpx.HTTPResponse(w, http.StatusCreated, map[string]string{"message": httpx.CreatedResponse})
+	httpx.HTTPResponse(w, http.StatusCreated, createdOrder)
 }
 
+// FindByID handles the HTTP request to find an order by its ID.
 func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -76,6 +87,7 @@ func (h *OrdersHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	httpx.HTTPResponse(w, http.StatusOK, order)
 }
 
+// ListByUserID handles the HTTP request to list orders for a given user.
 func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -105,8 +117,10 @@ func (h *OrdersHandler) ListByUserID(w http.ResponseWriter, r *http.Request) {
 	httpx.HTTPPaginatedResponse(w, http.StatusOK, orders, page, limit, total)
 }
 
+// Update handles the HTTP request to update an order.
 func (h *OrdersHandler) Update(w http.ResponseWriter, r *http.Request) {}
 
+// Delete handles the HTTP request to delete an order.
 func (h *OrdersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
