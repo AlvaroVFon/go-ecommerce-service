@@ -73,7 +73,7 @@ func (s *OrderService) CreateOrderFromCart(ctx context.Context, req *CreateOrder
 		UserID:          req.UserID,
 		Items:           orderItems,
 		Total:           total,
-		Status:          "pending", // Initial status
+		Status:          OrderStatusPending,
 		ShippingAddress: req.ShippingAddress,
 		PaymentMethod:   req.PaymentMethod,
 	}
